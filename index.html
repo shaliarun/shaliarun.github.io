@@ -98,6 +98,14 @@
             border-color: #4f46e5;
         }
 
+        /* Override to disable hover animation for the PDF card */
+        .no-hover-effect:hover {
+            transform: none !important;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+            background: rgba(255, 255, 255, 0.7) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
         .img-container {
             background-color: #f1f5f9;
             position: relative;
@@ -306,10 +314,10 @@
                         <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 serif">E-Commerce Strategy</p>
                     </div>
 
-                    <!-- Single ID Link to PDF -->
-                    <a href="Single%20ID%202.0.pdf" target="_blank" class="group cursor-pointer hover-bw block">
-                        <div class="img-container aspect-square rounded-[32px] glass-card mb-6 overflow-hidden">
-                            <img src="0001.jpg" alt="Single ID" onerror="this.style.opacity='0'" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110">
+                    <!-- Single ID Link to PDF (Targeted as non-downloadable and no-hover) -->
+                    <a href="Single ID 2.0.pdf" target="_blank" class="cursor-pointer block">
+                        <div class="img-container aspect-square rounded-[32px] glass-card mb-6 overflow-hidden no-hover-effect">
+                            <img src="0001.jpg" alt="Single ID" onerror="this.style.opacity='0'" class="w-full h-full object-cover transition-all duration-700">
                         </div>
                         <h4 class="text-2xl font-normal tracking-tight serif italic">
                             <span class="hello-gradient">Single</span> <span class="text-gradient">ID</span>
@@ -493,4 +501,3 @@
     </script>
 </body>
 </html>
-
