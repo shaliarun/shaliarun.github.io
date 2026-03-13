@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportZone AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f2f4f3; --surface:#ffffff; --surface2:#f4f6f5; --border:#dde2de;
+    --accent:#066858; --accent-h:#054f43; --accent2:#e6f2f0;
+    --text:#1a1a1a; --text2:#445048; --muted:#7a8c80;
+    --success:#066858; --success-bg:#e6f2f0;
+    --warn:#d4821a; --red:#c0392b; --red-bg:#fdf0ef;
+  }
+
+  /* ═══ RESET & BASE ═══ */
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{height:100%;overflow:hidden;}
+  body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;height:100vh;max-height:100vh;display:flex;flex-direction:row;overflow:hidden;align-items:stretch;}
+
+  /* ═══ SIDEBAR ═══ */
+  .sidebar{width:228px;height:100%;background:var(--accent);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+  .brand{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.15);flex-shrink:0;}
+  .brand-name{font-family:'Oswald',sans-serif;font-weight:700;font-size:25px;letter-spacing:1px;color:#fff;line-height:1;}
+  .brand-name span{color:#9eddd4;}
+  .brand-tag{font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;text-transform:uppercase;letter-spacing:2px;}
+  .sb-nav{flex:1;min-height:0;overflow-y:auto;}
+  .sb-nav::-webkit-scrollbar{width:0;}
+  .sb-section{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .sb-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.45);margin-bottom:7px;font-weight:600;}
+  .qbtn{display:flex;align-items:center;padding:8px 10px;border-radius:5px;border:none;background:transparent;color:rgba(255,255,255,0.88);font-family:'Source Sans 3',sans-serif;font-size:13px;cursor:pointer;width:100%;text-align:left;transition:background 0.15s;margin-bottom:1px;font-weight:500;justify-content:space-between;}
+  .qbtn:hover{background:rgba(255,255,255,0.13);}
+  .qbtn .qbtn-label{flex:1;}
+  .sb-badge{background:#fff;color:var(--accent);font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:20px;padding:0 4px;display:flex;align-items:center;justify-content:center;}
+  .sb-footer{flex-shrink:0;padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);}
+  .user-pill{display:flex;align-items:center;gap:9px;padding:9px;background:rgba(255,255,255,0.11);border-radius:7px;}
+  .avatar{width:32px;height:32px;border-radius:50%;background:#fff;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;}
+  .user-info .uname{font-size:13px;font-weight:600;color:#fff;}
+  .user-info .utag{font-size:11px;color:#9eddd4;}
+
+  /* ═══ MAIN ═══ */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;position:relative;height:100%;}
+
+  /* ═══ HEADER ═══ */
+  .chat-header{padding:0 20px;height:54px;border-bottom:3px solid var(--accent);display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+  .ai-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+  .hdr-title{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.5px;}
+  .hdr-sub{font-size:11px;color:var(--accent);font-weight:600;margin-top:1px;}
+
+  /* ═══ BODY (chat + panels) ═══ */
+  .body-wrap{flex:1;min-height:0;display:flex;overflow:hidden;position:relative;}
+  .chat-col{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;transition:margin-right 0.35s cubic-bezier(.4,0,.2,1);}
+  .chat-col.shift-right{margin-right:340px;}
+
+  .chat-messages{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;background:var(--bg);}
+  .chat-messages::-webkit-scrollbar{width:4px;}
+  .chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+  .msg{display:flex;gap:10px;animation:fup 0.28s ease;}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse;max-width:80%;}
+  .msg.ai{align-self:stretch;width:100%;}
+  .msg.ai.narrow-msg{align-self:flex-start;width:auto;max-width:78%;}
+  .msg.ai.track-msg{align-self:flex-start;width:auto;min-width:340px;max-width:78%;}
+  @keyframes fup{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  .msg-av{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:3px;}
+  .bubble{padding:10px 14px;border-radius:12px;font-size:13.5px;line-height:1.65;min-width:0;flex:1;}
+  .msg.ai .bubble{background:var(--surface);border:1px solid var(--border);border-top-left-radius:3px;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.05);overflow:hidden;}
+  .msg.user .bubble{background:var(--accent);color:#fff;border-top-right-radius:3px;}
+
+  /* ═══ INPUT AREA ═══ */
+  .input-area{padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .inp-wrap{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;transition:border-color 0.2s;}
+  .inp-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(6,104,88,0.1);}
+  #chat-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Source Sans 3',sans-serif;font-size:13.5px;}
+  #chat-input::placeholder{color:var(--muted);}
+  .send-btn{width:34px;height:34px;border-radius:6px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;transition:background 0.15s;flex-shrink:0;}
+  .send-btn:hover{background:var(--accent-h);}
+
+  /* ═══ SHARED PANEL STYLES ═══ */
+  .side-panel{position:absolute;top:0;bottom:0;width:340px;background:var(--surface);display:flex;flex-direction:column;z-index:50;box-shadow:-3px 0 18px rgba(0,0,0,0.1);transition:transform 0.35s cubic-bezier(.4,0,.2,1);}
+  .side-panel.right{right:0;border-left:1px solid var(--border);transform:translateX(100%);}
+  .side-panel.right.open{transform:translateX(0);}
+  .side-panel.cart-panel{right:0;border-left:1px solid var(--border);transform:translateX(100%);}
+  .side-panel.cart-panel.open{transform:translateX(0);}
+
+  .panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0;}
+  .panel-hdr-title{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text2);}
+  .panel-close{width:28px;height:28px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;transition:all 0.15s;}
+  .panel-close:hover{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+
+  /* ═══ PRODUCT DETAIL PANEL ═══ */
+  .panel-body{flex:1;overflow-y:auto;padding:0;}
+  .panel-body::-webkit-scrollbar{width:3px;}
+  .panel-body::-webkit-scrollbar-thumb{background:var(--border);}
+
+  .panel-img-wrap{width:100%;height:200px;overflow:hidden;background:#f0f5f3;flex-shrink:0;}
+  .panel-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+  .panel-info{padding:16px;}
+  .panel-brand-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent);margin-bottom:4px;}
+  .panel-pname{font-family:'Oswald',sans-serif;font-size:22px;font-weight:600;line-height:1.2;color:var(--text);margin-bottom:6px;}
+  .panel-price{font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+  .panel-rating{font-size:12.5px;color:var(--warn);margin-bottom:12px;}
+  .panel-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .spec-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .spec-row:last-child{border-bottom:none;}
+  .spec-row .slbl{color:var(--muted);}
+  .spec-row .sval{font-weight:600;color:var(--text);}
+
+  /* Size selector */
+  .size-section{margin:12px 0 8px;}
+  .size-label{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+  .size-label span{color:var(--accent);font-weight:700;}
+  .size-grid{display:flex;flex-wrap:wrap;gap:6px;}
+  .size-btn{padding:5px 10px;border-radius:5px;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:11.5px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'Source Sans 3',sans-serif;}
+  .size-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent2);}
+  .size-btn.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .size-required{font-size:11px;color:var(--red);margin-top:6px;display:none;}
+  .size-required.show{display:block;}
+
+  .panel-actions{padding:14px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0;background:var(--surface);}
+  /* ── PANEL BUTTONS (pbtn) ── */
+  .pbtn{padding:12px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif;text-align:center;text-transform:uppercase;letter-spacing:0.5px;transition:all 0.15s;border:2px solid transparent;display:block;width:100%;}
+
+  /* Primary — brand green: Add to Cart, Reorder */
+  .pbtn-solid{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .pbtn-solid:hover{background:var(--accent-h);border-color:var(--accent-h);}
+
+  /* Secondary — outlined green: secondary actions */
+  .pbtn-outline{background:transparent;border-color:var(--accent);color:var(--accent);}
+  .pbtn-outline:hover{background:var(--accent2);}
+
+  /* Confirmed state */
+  .pbtn-added{background:#e8f5f2;color:var(--accent);border-color:var(--accent);}
+
+  /* Buy Now — deep navy: immediate purchase */
+  .pbtn-navy{background:#1e3a5f;color:#fff;border-color:#1e3a5f;}
+  .pbtn-navy:hover{background:#162e4d;border-color:#162e4d;}
+
+  /* View Details — steel blue outline */
+  .pbtn-slate{background:transparent;border-color:#1e3a5f;color:#1e3a5f;}
+  .pbtn-slate:hover{background:#edf2f8;}
+
+  /* Complaint / Warning — warm amber */
+  .pbtn-amber{background:#c97a1a;color:#fff;border-color:#c97a1a;}
+  .pbtn-amber:hover{background:#a86314;border-color:#a86314;}
+
+  /* Return / Destructive — muted red */
+  .pbtn-red{background:#b83232;color:#fff;border-color:#b83232;}
+  .pbtn-red:hover{background:#962828;border-color:#962828;}
+
+  /* ── PRODUCT CARD BUTTONS (pc-btn) ── */
+  .pc-btn{width:100%;padding:6px 4px;border-radius:4px;font-size:9.5px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif;text-transform:uppercase;letter-spacing:0.2px;transition:all 0.15s;text-align:center;border:2px solid transparent;}
+  /* Add to Cart on card — solid green */
+  .pc-btn-solid{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .pc-btn-solid:hover{background:var(--accent-h);border-color:var(--accent-h);}
+  /* View Details on card — navy outline */
+  .pc-btn-outline{background:transparent;border-color:#1e3a5f !important;color:#1e3a5f;}
+  .pc-btn-outline:hover{background:#edf2f8;}
+
+  /* ── CHAT ACTION BUTTONS (action-btn) ── */
+  .action-btn{padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:'Source Sans 3',sans-serif;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.3px;}
+  .action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent2);}
+
+  /* ── CHECKOUT & CART BUTTONS ── */
+  .cp-checkout-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif;text-transform:uppercase;letter-spacing:0.5px;transition:background 0.15s;}
+  .cp-checkout-btn:hover{background:var(--accent-h);}
+  .co-next-btn{width:100%;padding:13px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif;text-transform:uppercase;letter-spacing:0.5px;transition:background 0.15s;}
+  .co-next-btn:hover{background:#162e4d;}
+  .co-next-btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+
+  /* ── SUGGESTION CHIPS ── */
+  .sug-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  .sug{padding:5px 12px;border-radius:20px;background:var(--surface2);border:1.5px solid var(--border);font-size:11.5px;cursor:pointer;color:var(--text2);font-family:'Source Sans 3',sans-serif;font-weight:600;transition:all 0.15s;}
+  .sug:hover{border-color:var(--accent);color:var(--accent);background:var(--accent2);}
+
+  /* ═══ CART PANEL ═══ */
+  .cart-panel-body{flex:1;overflow-y:auto;padding:0 16px;}
+  .cart-panel-body::-webkit-scrollbar{width:3px;}
+  .cart-panel-body::-webkit-scrollbar-thumb{background:var(--border);}
+  .cart-empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:14px;}
+  .cart-empty-icon{font-size:40px;margin-bottom:10px;opacity:0.4;}
+
+  .cp-item{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid var(--border);align-items:center;}
+  .cp-item:last-child{border-bottom:none;}
+  .cp-item-img{width:52px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface2);flex-shrink:0;}
+  .cp-item-info{flex:1;min-width:0;}
+  .cp-item-brand{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:0.5px;}
+  .cp-item-name{font-size:12.5px;font-weight:600;color:var(--text);line-height:1.3;margin-top:1px;}
+  .cp-item-price{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--accent);margin-top:3px;}
+  .cp-remove{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px;transition:color 0.15s;flex-shrink:0;}
+  .cp-remove:hover{color:var(--red);}
+
+  .cart-panel-footer{padding:14px 16px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0;}
+  .cp-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .cp-total-lbl{font-size:12px;color:var(--muted);font-weight:600;}
+  .cp-total-amt{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--accent);}
+  .cp-ship-note{font-size:11px;color:var(--muted);margin-bottom:10px;}
+
+  /* ═══ CHECKOUT PANEL ═══ */
+  .side-panel.checkout-panel{right:0;border-left:1px solid var(--border);transform:translateX(100%);z-index:70;}
+  .side-panel.checkout-panel.open{transform:translateX(0);}
+
+  /* Step progress bar */
+  .co-steps{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0;gap:0;}
+  .co-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;}
+  .co-step-dot{width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.3s;border:2px solid var(--border);}
+  .co-step.active .co-step-dot{background:#1e3a5f;color:#fff;border-color:#1e3a5f;box-shadow:0 0 0 3px rgba(30,58,95,0.15);}
+  .co-step.done .co-step-dot{background:#1e3a5f;color:#fff;border-color:#1e3a5f;}
+  .co-step-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-top:4px;text-align:center;}
+  .co-step.active .co-step-lbl,.co-step.done .co-step-lbl{color:#1e3a5f;}
+  .co-step-line{flex:1;height:2px;background:var(--border);margin-bottom:14px;transition:background 0.3s;}
+  .co-step-line.done{background:#1e3a5f;}
+
+  /* Checkout body */
+  .co-body{flex:1;overflow-y:auto;padding:16px;}
+  .co-body::-webkit-scrollbar{width:3px;}
+  .co-body::-webkit-scrollbar-thumb{background:var(--border);}
+
+  .co-section-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;color:var(--text);margin-bottom:12px;letter-spacing:0.5px;}
+
+  /* Address cards */
+  .addr-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .addr-card{padding:12px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all 0.15s;background:var(--surface);}
+  .addr-card:hover{border-color:var(--accent);background:var(--accent2);}
+  .addr-card.selected{border-color:var(--accent);background:var(--accent2);}
+  .addr-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .addr-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;padding:2px 8px;border-radius:3px;background:var(--accent);color:#fff;}
+  .addr-tag.work{background:#3563c4;}
+  .addr-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+  .addr-line{font-size:12px;color:var(--muted);line-height:1.5;}
+  .addr-select-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);transition:all 0.15s;flex-shrink:0;}
+  .addr-card.selected .addr-select-dot{background:var(--accent);border-color:var(--accent);}
+  .addr-add-btn{width:100%;padding:10px;border:1.5px dashed var(--border);border-radius:7px;background:transparent;color:var(--muted);font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .addr-add-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* Delivery options */
+  .delivery-opts{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+  .del-opt{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all 0.15s;gap:10px;}
+  .del-opt:hover{border-color:#c97a1a;background:#fdf3e7;}
+  .del-opt.selected{border-color:#c97a1a;background:#fdf3e7;}
+  .del-opt-left{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .del-opt-name{font-size:13px;font-weight:600;color:var(--text);}
+  .del-opt.selected .del-opt-name{color:#a86314;}
+  .del-opt-sub{font-size:11px;color:var(--muted);}
+  .del-opt-price{font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;color:#c97a1a;}
+  .del-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all 0.15s;}
+  .del-opt.selected .del-dot{background:#c97a1a;border-color:#c97a1a;}
+
+  /* Order summary in checkout */
+  .co-order-mini{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:14px;}
+  .co-order-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;}
+  .co-order-row.total{border-top:1.5px solid var(--accent);margin-top:6px;padding-top:8px;font-weight:700;font-size:14px;color:var(--accent);}
+  .co-order-row .lbl{color:var(--muted);}
+
+  /* Payment methods */
+  .pay-methods{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .pay-card{display:flex;align-items:center;gap:12px;padding:12px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all 0.15s;}
+  .pay-card:hover,.pay-card.selected{border-color:var(--accent);background:var(--accent2);}
+  .pay-icon{width:38px;height:28px;border-radius:4px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;font-family:'Oswald',sans-serif;}
+  .pay-icon.upi{color:#5f00a3;font-size:11px;}
+  .pay-icon.card{color:#1a1a1a;font-size:11px;}
+  .pay-icon.net{color:#066858;font-size:10px;}
+  .pay-icon.cod{color:#d4821a;font-size:10px;}
+  .pay-info{flex:1;}
+  .pay-name{font-size:13px;font-weight:600;color:var(--text);}
+  .pay-sub{font-size:11px;color:var(--muted);}
+  .pay-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all 0.15s;}
+  .pay-card.selected .pay-dot{background:var(--accent);border-color:var(--accent);}
+
+  /* UPI input */
+  .upi-input-wrap{background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;padding:10px 12px;display:flex;align-items:center;gap:8px;margin-top:8px;transition:border-color 0.2s;}
+  .upi-input-wrap:focus-within{border-color:var(--accent);}
+  .upi-input-wrap input{flex:1;background:transparent;border:none;outline:none;font-family:'Source Sans 3',sans-serif;font-size:13px;color:var(--text);}
+  .upi-input-wrap input::placeholder{color:var(--muted);}
+  .upi-verify-btn{padding:5px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Source Sans 3',sans-serif;}
+
+  /* Card input fields */
+  .card-fields{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .card-field{background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;transition:border-color 0.2s;}
+  .card-field:focus-within{border-color:var(--accent);}
+  .card-field label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);}
+  .card-field input{background:transparent;border:none;outline:none;font-family:'Source Sans 3',sans-serif;font-size:13px;color:var(--text);}
+  .card-field input::placeholder{color:var(--muted);}
+  .card-row{display:flex;gap:8px;}
+  .card-row .card-field{flex:1;}
+
+  /* Processing animation */
+  .processing-wrap{text-align:center;padding:32px 16px;}
+  .processing-spinner{width:48px;height:48px;border:3px solid var(--accent2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 16px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .processing-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:6px;}
+  .processing-sub{font-size:13px;color:var(--muted);}
+
+  /* Success state */
+  .success-wrap{text-align:center;padding:24px 16px;}
+  .success-check{width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+  .success-title{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:6px;text-transform:uppercase;}
+  .success-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+  .success-order-box{background:var(--success-bg);border:1.5px solid var(--accent);border-radius:7px;padding:12px;text-align:left;}
+  .success-row{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid rgba(6,104,88,0.12);}
+  .success-row:last-child{border-bottom:none;}
+  .success-row .lbl{color:var(--muted);}
+  .success-row .val{font-weight:600;color:var(--text);}
+
+  /* Checkout footer */
+  .co-footer{padding:14px 16px;border-top:1px solid var(--border);background:var(--surface2);flex-shrink:0;}
+  .co-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .co-total-lbl{font-size:12px;color:var(--muted);font-weight:600;}
+  .co-total-amt{font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:var(--accent);}
+  .co-back-btn{width:100%;padding:9px;background:transparent;color:var(--muted);border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:'Source Sans 3',sans-serif;text-transform:uppercase;margin-top:6px;}
+  .co-back-btn:hover{color:var(--text);}
+
+  /* ═══ PRODUCT CAROUSEL ═══ */
+  .carousel-wrap{width:100%;margin-top:10px;overflow:hidden;}
+  .carousel-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .carousel-count{font-size:11px;color:var(--muted);font-weight:600;}
+
+  .carousel-viewport{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:visible;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+    scrollbar-color:var(--accent) var(--border);
+    padding-bottom:5px;
+  }
+  .carousel-viewport::-webkit-scrollbar{height:3px;}
+  .carousel-viewport::-webkit-scrollbar-track{background:var(--border);border-radius:2px;}
+  .carousel-viewport::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
+
+  .carousel-track{
+    display:flex;
+    gap:8px;
+    width:max-content;
+  }
+
+  .product-card{
+    width:155px;
+    flex-shrink:0;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:9px;
+    overflow:hidden;
+    transition:box-shadow 0.18s,transform 0.18s;
+  }
+  .product-card:hover{box-shadow:0 4px 14px rgba(6,104,88,0.12);transform:translateY(-2px);border-color:var(--accent);}
+  .product-img{width:100%;height:140px;object-fit:cover;display:block;background:var(--surface2);}
+  .product-info{padding:8px;}
+  .pc-brand{font-size:9px;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:0.5px;margin-bottom:2px;}
+  .pc-name{font-size:11px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:3px;}
+  .pc-price{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--accent);margin-bottom:2px;}
+  .pc-rating{font-size:10px;color:var(--warn);margin-bottom:4px;}
+  .pc-desc{font-size:9.5px;color:var(--muted);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .pc-actions{display:flex;flex-direction:column;gap:4px;}
+
+  /* ═══ CART SUMMARY (chat) ═══ */
+  .cart-summary{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:10px;}
+  .cart-title{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text);margin-bottom:10px;}
+  .cart-item{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+  .cart-item:last-of-type{border-bottom:none;}
+  .ci-img{width:40px;height:40px;border-radius:5px;object-fit:cover;background:var(--surface2);}
+  .cart-item-info{flex:1;min-width:0;}
+  .cart-item-name{font-weight:600;font-size:12px;color:var(--text);}
+  .cart-item-sub{font-size:11px;color:var(--muted);}
+  .cart-item-price{color:var(--accent);font-size:13px;font-weight:700;}
+  .cart-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:2px solid var(--accent);}
+  .cart-total-label{font-size:12px;color:var(--muted);font-weight:600;}
+  .cart-total-amount{font-family:'Oswald',sans-serif;font-size:21px;font-weight:700;color:var(--accent);}
+
+  /* ═══ ORDER CONFIRM ═══ */
+  .order-confirm{background:var(--success-bg);border:1.5px solid var(--accent);border-radius:8px;padding:16px;margin-top:10px;}
+  .confirm-header{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;color:var(--accent);text-transform:uppercase;margin-bottom:12px;}
+  .confirm-row{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid rgba(6,104,88,0.14);gap:16px;}
+  .confirm-row:last-of-type{border-bottom:none;}
+  .confirm-row .label{color:var(--muted);white-space:nowrap;}
+  .confirm-row .val{font-weight:600;color:var(--text);text-align:right;}
+
+  /* ═══ ACTION BUTTONS ═══ */
+  .action-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;}
+  .action-btn{padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-family:'Source Sans 3',sans-serif;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.3px;}
+  .action-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent2);}
+
+  /* ═══ TRACKING ═══ */
+  .track-bar{display:flex;align-items:flex-start;margin:16px 0 10px;padding:0 2px;}
+  .track-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:64px;}
+  .track-dot{width:22px;height:22px;border-radius:50%;background:var(--border);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;z-index:1;flex-shrink:0;}
+  .track-dot.done{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .track-dot.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent2);}
+  .track-label{font-size:9px;color:var(--muted);margin-top:6px;text-align:center;font-weight:600;text-transform:uppercase;white-space:nowrap;}
+  .track-label.active-lbl{color:var(--accent);}
+  .track-line{flex:1;height:2px;background:var(--border);margin-top:11px;flex-shrink:1;min-width:8px;}
+  .track-line.done{background:var(--accent);}
+
+  /* ═══ RETURN ═══ */
+  .return-card{background:var(--red-bg);border:1.5px solid rgba(192,57,43,0.3);border-radius:8px;padding:14px;margin-top:8px;}
+  .return-header{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:10px;}
+
+  /* ═══ RECO ═══ */
+  .reco-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;}
+  .reco-item{display:flex;align-items:center;gap:10px;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:7px;cursor:pointer;transition:all 0.15s;}
+  .reco-item:hover{border-color:var(--accent);background:var(--accent2);}
+  .reco-img{width:36px;height:36px;border-radius:5px;object-fit:cover;background:var(--surface2);}
+  .reco-item-info{flex:1;}
+  .reco-item-name{font-size:12.5px;font-weight:600;color:var(--text);}
+  .reco-item-price{font-size:11.5px;color:var(--accent);font-weight:600;}
+  .reco-arrow{color:var(--muted);font-size:14px;font-weight:700;}
+
+  /* ═══ ORDER SELECT ═══ */
+  .order-select-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+  .order-select-card{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--surface);border:1.5px solid var(--border);border-radius:7px;cursor:pointer;transition:all 0.18s;gap:10px;}
+  .order-select-card:hover{border-color:var(--accent);background:var(--accent2);}
+  .osc-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+  .osc-img{width:36px;height:36px;border-radius:5px;object-fit:cover;background:var(--surface2);flex-shrink:0;}
+  .osc-info{min-width:0;}
+  .osc-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+  .osc-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .osc-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .osc-status{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;text-transform:uppercase;}
+  .st-active{background:#fff3e0;color:#d4821a;border:1px solid #f0c070;}
+  .st-done{background:var(--success-bg);color:var(--accent);border:1px solid rgba(6,104,88,0.3);}
+  .st-confirm{background:#e8f0fe;color:#3563c4;border:1px solid #b8d0f8;}
+  .osc-arrow{color:var(--muted);font-size:16px;font-weight:700;}
+
+  /* ═══ TYPING ═══ */
+  .typing{display:flex;align-items:center;gap:5px;padding:5px 2px;}
+  .typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.2s ease-in-out infinite;}
+  .typing span:nth-child(2){animation-delay:0.2s;}
+  .typing span:nth-child(3){animation-delay:0.4s;}
+  @keyframes blink{0%,80%,100%{opacity:0.2;}40%{opacity:1;}}
+
+  /* ═══ TOAST ═══ */
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--accent);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:4px;opacity:0;pointer-events:none;transition:all 0.3s;z-index:999;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="brand">
+    <div class="brand-name">SPORT<span>ZONE</span></div>
+    <div class="brand-tag">AI Shopping Assistant</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">
+      <div class="sb-label">Browse Sports</div>
+      <button class="qbtn" onclick="sendQuick('Show me cricket bats')"><span class="qbtn-label">Cricket Bats</span></button>
+      <button class="qbtn" onclick="sendQuick('Running shoes under 5000')"><span class="qbtn-label">Running Shoes</span></button>
+      <button class="qbtn" onclick="sendQuick('Show me badminton rackets')"><span class="qbtn-label">Badminton Rackets</span></button>
+      <button class="qbtn" onclick="sendQuick('Show me footballs')"><span class="qbtn-label">Football Gear</span></button>
+      <button class="qbtn" onclick="sendQuick('Show me swimming accessories')"><span class="qbtn-label">Swimming Gear</span></button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">My Account</div>
+      <button class="qbtn" onclick="openCartPanel()">
+        <span class="qbtn-label">My Cart</span>
+        <span class="sb-badge" id="sb-cart-count">0</span>
+      </button>
+      <button class="qbtn" onclick="sendQuick('Track my order')"><span class="qbtn-label">Track Order</span></button>
+      <button class="qbtn" onclick="sendQuick('Show my order history')"><span class="qbtn-label">Order History</span></button>
+      <button class="qbtn" onclick="sendQuick('I need customer support')"><span class="qbtn-label">Support</span></button>
+    </div>
+  </div>
+  <div class="sb-footer">
+    <div class="user-pill">
+      <div class="avatar">R</div>
+      <div class="user-info">
+        <div class="uname">Rahul Singh</div>
+        <div class="utag">Premium Member</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- HEADER (no cart button) -->
+  <div class="chat-header">
+    <div class="ai-dot"></div>
+    <div>
+      <div class="hdr-title">SportZone AI Assistant</div>
+      <div class="hdr-sub">Online & Ready</div>
+    </div>
+  </div>
+
+  <!-- BODY WRAP -->
+  <div class="body-wrap">
+
+    <!-- CHAT COLUMN -->
+    <div class="chat-col" id="chat-col">
+      <div class="chat-messages" id="messages"></div>
+      <div class="input-area">
+        <div class="sug-row">
+          <button class="sug" onclick="sendQuick('Show me cricket bats')">Cricket Bats</button>
+          <button class="sug" onclick="sendQuick('Running shoes under 5000')">Running Shoes</button>
+          <button class="sug" onclick="sendQuick('Show me badminton rackets')">Badminton</button>
+          <button class="sug" onclick="sendQuick('Track my order')">Track Order</button>
+          <button class="sug" onclick="sendQuick('Return my order')">Return</button>
+        </div>
+        <div class="inp-wrap">
+          <input type="text" id="chat-input" placeholder="Ask me about sports gear…" onkeydown="handleKey(event)">
+          <button class="send-btn" onclick="sendMessage()">&#10148;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT DETAIL PANEL (right) -->
+    <div class="side-panel right" id="detail-panel">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">Product Details</span>
+        <button class="panel-close" onclick="closeDetailPanel()">&#10005;</button>
+      </div>
+      <div class="panel-body" id="panel-body"></div>
+      <div class="panel-actions" id="panel-actions"></div>
+    </div>
+
+    <!-- ORDER DETAIL PANEL (right) -->
+    <div class="side-panel right" id="order-detail-panel" style="z-index:55;">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">Order Details</span>
+        <button class="panel-close" onclick="closeOrderDetailPanel()">&#10005;</button>
+      </div>
+      <div class="panel-body" id="order-detail-body" style="padding:0 16px 16px;"></div>
+    </div>
+
+    <!-- CART PANEL (also right, higher z-index) -->
+    <div class="side-panel cart-panel" id="cart-panel" style="z-index:60;">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title">My Cart (<span id="cp-count">0</span>)</span>
+        <button class="panel-close" onclick="closeCartPanel()">&#10005;</button>
+      </div>
+      <div class="cart-panel-body" id="cart-panel-body">
+        <div class="cart-empty">Your cart is empty.<br>Start shopping!</div>
+      </div>
+      <div class="cart-panel-footer" id="cart-panel-footer" style="display:none;">
+        <div class="cp-total-row">
+          <span class="cp-total-lbl">Total</span>
+          <span class="cp-total-amt" id="cp-total">&#8377;0</span>
+        </div>
+        <div class="cp-ship-note" id="cp-ship-note"></div>
+        <button class="cp-checkout-btn" onclick="openCheckoutPanel()">Proceed to Checkout</button>
+      </div>
+    </div>
+
+    <!-- CHECKOUT PANEL (right, highest z-index) -->
+    <div class="side-panel checkout-panel" id="checkout-panel">
+      <div class="panel-hdr">
+        <span class="panel-hdr-title" id="co-panel-title">Checkout</span>
+        <button class="panel-close" onclick="closeCheckoutPanel()">&#10005;</button>
+      </div>
+      <!-- Step progress -->
+      <div class="co-steps" id="co-steps">
+        <div class="co-step active" id="co-step-0">
+          <div class="co-step-dot">1</div>
+          <div class="co-step-lbl">Address</div>
+        </div>
+        <div class="co-step-line" id="co-line-0"></div>
+        <div class="co-step" id="co-step-1">
+          <div class="co-step-dot">2</div>
+          <div class="co-step-lbl">Payment</div>
+        </div>
+        <div class="co-step-line" id="co-line-1"></div>
+        <div class="co-step" id="co-step-2">
+          <div class="co-step-dot">3</div>
+          <div class="co-step-lbl">Confirm</div>
+        </div>
+      </div>
+      <div class="co-body" id="co-body"></div>
+      <div class="co-footer" id="co-footer"></div>
+    </div>
+
+  </div><!-- /body-wrap -->
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────
+   AI IMAGE MAPS  (Unsplash photos keyed by product id)
+───────────────────────────────────────── */
+const IMG = {
+  // ── Cricket Bats ──────────────────────────────────────────────────────────
+  c1: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=500&fit=crop",
+  c2: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=500&fit=crop",
+  c3: "https://images.unsplash.com/photo-1624880357913-a8539238245b?w=400&h=500&fit=crop",
+  c4: "https://images.unsplash.com/photo-1593766788306-28561086694e?w=400&h=500&fit=crop",
+  c5: "https://images.unsplash.com/photo-1578269174936-2709b6aeb913?w=400&h=500&fit=crop",
+  c6: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=400&h=500&fit=crop",
+  c7: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=400&h=500&fit=crop",
+  c8: "https://images.unsplash.com/photo-1624880357913-a8539238245b?w=400&h=500&fit=crop",
+  c9: "https://images.unsplash.com/photo-1593766788306-28561086694e?w=400&h=500&fit=crop",
+  c10:"https://images.unsplash.com/photo-1578269174936-2709b6aeb913?w=400&h=500&fit=crop",
+
+  // ── Running Shoes ─────────────────────────────────────────────────────────
+  r1: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop",   // Nike red
+  r2: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400&h=500&fit=crop", // Adidas white
+  r3: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=500&fit=crop", // ASICS gel
+  r4: "https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=400&h=500&fit=crop", // Puma
+  r5: "https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=400&h=500&fit=crop", // New Balance
+  r6: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400&h=500&fit=crop", // trail shoe
+  r7: "https://images.unsplash.com/photo-1556906781-9a412961a28c?w=400&h=500&fit=crop",   // Reebok
+  r8: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=500&fit=crop", // Brooks style
+  r9: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400&h=500&fit=crop",   // Hoka style
+  r10:"https://images.unsplash.com/photo-1575537302964-96cd47c06b1b?w=400&h=500&fit=crop", // Mizuno style
+
+  // ── Badminton Rackets ─────────────────────────────────────────────────────
+  b1: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b2: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b3: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b4: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b5: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b6: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b7: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b8: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b9: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+  b10:"https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&h=500&fit=crop",
+
+  // ── Football / Soccer ─────────────────────────────────────────────────────
+  f1: "https://images.unsplash.com/photo-1551958219-acbc595a1bd3?w=400&h=500&fit=crop",   // football ball
+  f2: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=400&h=500&fit=crop", // Adidas ball
+  f3: "https://images.unsplash.com/photo-1553778263-73a83bab9b0c?w=400&h=500&fit=crop",   // goalkeeper gloves
+  f4: "https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=400&h=500&fit=crop",   // football
+  f5: "https://images.unsplash.com/photo-1511886929837-354d827aae26?w=400&h=500&fit=crop", // football boots
+  f6: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&h=500&fit=crop", // boots on turf
+  f7: "https://images.unsplash.com/photo-1551958219-acbc595a1bd3?w=400&h=500&fit=crop",   // ball
+  f8: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=400&h=500&fit=crop", // ball
+  f9: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=400&h=500&fit=crop", // shin guards
+  f10:"https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&h=500&fit=crop", // football
+
+  // ── Swimming ──────────────────────────────────────────────────────────────
+  s1: "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=400&h=500&fit=crop", // swim goggles
+  s2: "https://images.unsplash.com/photo-1600679472829-3044539ce405?w=400&h=500&fit=crop", // swim cap
+  s3: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=500&fit=crop", // swimmer pool
+  s4: "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=400&h=500&fit=crop", // goggles
+  s5: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=400&h=500&fit=crop", // swimsuit
+  s6: "https://images.unsplash.com/photo-1519315901367-f34ff9154487?w=400&h=500&fit=crop", // goggles wide
+  s7: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=500&fit=crop", // training pool
+  s8: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=400&h=500&fit=crop", // swim shorts
+  s9: "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=500&fit=crop", // kickboard pool
+  s10:"https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&h=500&fit=crop", // fins pool
+};
+
+/* ─────────────────────────────────────────
+   STATE
+───────────────────────────────────────── */
+const state = {
+  cart:[],
+  orders:[{
+    id:"SPZ-2024-8821",product:"SG Xtreme Cricket Bat",pid:"c1",
+    date:"March 3, 2026",status:"Out for Delivery",
+    tracking:["Ordered","Confirmed","Shipped","Out for Delivery"],
+    currentStep:3,estimate:"Today by 8 PM"
+  }],
+  panelProduct:null,
+  selectedSize:null,
+};
+
+/* ─────────────────────────────────────────
+   PRODUCT CATALOG
+───────────────────────────────────────── */
+const PRODUCTS = {
+  cricket:[
+    {id:"c1", name:"SG Xtreme Cricket Bat",         price:2499,  rating:4.5, desc:"Lightweight English willow for professional play. Perfect balance and grip.",               brand:"SG",         delivery:"3–5 days", shipping:150, sizes:["Short Handle","Long Handle"]},
+    {id:"c2", name:"Kookaburra Beast Pro",            price:18999, rating:4.7, desc:"Grade 1 English willow with thick edges and a large sweet spot.",                           brand:"Kookaburra", delivery:"4–6 days", shipping:0,   sizes:["Short Handle","Long Handle"]},
+    {id:"c3", name:"MRF Virat Kohli Edition",         price:8499,  rating:4.6, desc:"Endorsed by professionals. Excellent pick-up and power transfer.",                          brand:"MRF",        delivery:"2–4 days", shipping:100, sizes:["Short Handle"]},
+    {id:"c4", name:"SS Ton Master 5000",              price:4999,  rating:4.5, desc:"Seasoned English willow with a full profile and outstanding power.",                         brand:"SS",         delivery:"3–5 days", shipping:0,   sizes:["Short Handle","Long Handle"]},
+    {id:"c5", name:"Gray-Nicolls Kronus",             price:34999, rating:4.8, desc:"Premium Grade 1 willow used by international players. Superior feel.",                      brand:"Gray-Nicolls",delivery:"4–6 days",shipping:0,   sizes:["Short Handle"]},
+    {id:"c6", name:"BDM Jumbo Cricket Bat",           price:899,   rating:4.1, desc:"Kashmir willow bat ideal for practice and club-level matches.",                             brand:"BDM",        delivery:"2–4 days", shipping:80,  sizes:["Short Handle","Long Handle"]},
+    {id:"c7", name:"SG RSD Spark",                   price:12999, rating:4.3, desc:"Mid-range English willow with a balanced blade for aggressive batsmen.",                    brand:"SG",         delivery:"3–5 days", shipping:120, sizes:["Short Handle"]},
+    {id:"c8", name:"Gunn & Moore Sparq",              price:54999, rating:4.6, desc:"Professional willow bat with an oval-shaped handle for enhanced control.",                  brand:"G&M",        delivery:"5–7 days", shipping:0,   sizes:["Short Handle","Long Handle"]},
+    {id:"c9", name:"Spartan MS Dhoni Edition",        price:22999, rating:4.4, desc:"Inspired by MS Dhoni's helicopter shot. Great power hitting blade.",                        brand:"Spartan",    delivery:"2–4 days", shipping:150, sizes:["Short Handle"]},
+    {id:"c10",name:"CA Plus 15000",                  price:99999, rating:4.9, desc:"Top-of-the-range Grade 1 willow used in international tournaments.",                       brand:"CA Sports",  delivery:"5–7 days", shipping:0,   sizes:["Short Handle","Long Handle"]},
+  ],
+  running:[
+    {id:"r1", name:"Nike Revolution 6",              price:3499,  rating:4.4, desc:"Lightweight foam cushioning for everyday comfortable running.",                              brand:"Nike",  delivery:"2–4 days", shipping:0,   sizes:["UK 6","UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r2", name:"Adidas Duramo SL",               price:1299,  rating:4.3, desc:"Breathable mesh upper, ideal for long-distance runs.",                                       brand:"Adidas",delivery:"3–5 days", shipping:0,   sizes:["UK 6","UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r3", name:"ASICS Gel-Venture 9",            price:7999,  rating:4.5, desc:"Gel cushioning technology for trail and road running.",                                      brand:"ASICS", delivery:"3–5 days", shipping:99,  sizes:["UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r4", name:"Puma Softride Rismo",            price:599,   rating:4.1, desc:"Ultra-soft SoftFoam+ insole with slip-on convenience.",                                     brand:"Puma",  delivery:"2–4 days", shipping:0,   sizes:["UK 6","UK 7","UK 8","UK 9"]},
+    {id:"r5", name:"New Balance Fresh Foam 680",     price:14999, rating:4.6, desc:"Fresh Foam midsole for a plush, cushioned ride on any terrain.",                            brand:"New Balance",delivery:"3–5 days",shipping:0,  sizes:["UK 7","UK 8","UK 9","UK 10","UK 11"]},
+    {id:"r6", name:"Saucony Kinvara 13",             price:24999, rating:4.7, desc:"Speed-oriented trainer with a flexible PWRRUN foam for responsive runs.",                   brand:"Saucony",delivery:"4–6 days", shipping:0,   sizes:["UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r7", name:"Reebok Floatride Energy 4",      price:5499,  rating:4.2, desc:"Floatride Energy foam delivers a lightweight, bouncy ride.",                                 brand:"Reebok",delivery:"2–4 days", shipping:0,   sizes:["UK 6","UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r8", name:"Brooks Ghost 14",                price:44999, rating:4.8, desc:"DNA LOFT v2 cushioning for a soft, smooth ride — ideal for daily training.",                brand:"Brooks",delivery:"5–7 days", shipping:0,   sizes:["UK 7","UK 8","UK 9","UK 10","UK 11"]},
+    {id:"r9", name:"Hoka Clifton 9",                 price:64999, rating:4.9, desc:"Maximal cushioning with a meta-rocker geometry for effortless forward motion.",             brand:"Hoka", delivery:"5–7 days",  shipping:0,   sizes:["UK 7","UK 8","UK 9","UK 10"]},
+    {id:"r10",name:"Mizuno Wave Rider 26",           price:32999, rating:4.5, desc:"U4icX+ midsole and WAVEKNIT upper for comfort across long runs.",                           brand:"Mizuno",delivery:"4–6 days", shipping:99,  sizes:["UK 7","UK 8","UK 9","UK 10"]},
+  ],
+  badminton:[
+    {id:"b1", name:"Yonex Nanoray 10",               price:1999,  rating:4.4, desc:"Slim shaft design for faster swing speed and precise control.",                              brand:"Yonex",   delivery:"3–5 days", shipping:0,   sizes:["Standard"]},
+    {id:"b2", name:"Li-Ning Wind Lite 700",           price:799,   rating:4.2, desc:"Carbon fibre shaft, perfect for intermediate players.",                                     brand:"Li-Ning", delivery:"3–5 days", shipping:80,  sizes:["Standard"]},
+    {id:"b3", name:"Cosco CBX 450",                  price:549,   rating:4.0, desc:"Aluminium frame, great for beginners and casual play.",                                      brand:"Cosco",   delivery:"2–4 days", shipping:60,  sizes:["Standard"]},
+    {id:"b4", name:"Victor Thruster K 12",           price:11999, rating:4.7, desc:"Professional attack racket with a stiff shaft for powerful smashes.",                       brand:"Victor",  delivery:"4–6 days", shipping:0,   sizes:["Standard"]},
+    {id:"b5", name:"Yonex Astrox 99",                price:28999, rating:4.9, desc:"Head-heavy balance racket for dominant attacking play. Used by Lee Zii Jia.",               brand:"Yonex",   delivery:"5–7 days", shipping:0,   sizes:["Standard"]},
+    {id:"b6", name:"Babolat Satelite Gravity 74",    price:7499,  rating:4.3, desc:"Lightweight frame at 74g for fast and precise net play.",                                   brand:"Babolat", delivery:"4–6 days", shipping:80,  sizes:["Standard"]},
+    {id:"b7", name:"Forza HT Power 32-S",            price:4999,  rating:4.2, desc:"High tension string support with a powerful sweet spot.",                                   brand:"Forza",   delivery:"3–5 days", shipping:60,  sizes:["Standard"]},
+    {id:"b8", name:"Yonex Arcsaber 11 Pro",          price:54999, rating:4.8, desc:"Precise speed and control racket for elite tournament players.",                            brand:"Yonex",   delivery:"5–7 days", shipping:0,   sizes:["Standard"]},
+    {id:"b9", name:"Carlton Aeroblade 4000",         price:2999,  rating:4.1, desc:"Aeroblade frame reduces air drag for a faster swing.",                                      brand:"Carlton", delivery:"3–5 days", shipping:50,  sizes:["Standard"]},
+    {id:"b10",name:"Ashaway Superlight 79 SQ",       price:17999, rating:4.3, desc:"79g superlight racket with a compact head for quick reactions.",                           brand:"Ashaway", delivery:"3–5 days", shipping:60,  sizes:["Standard"]},
+  ],
+  football:[
+    {id:"f1", name:"Nivia Storm Football",           price:699,   rating:4.2, desc:"PVC machine-stitched ball, ideal for training sessions.",                                    brand:"Nivia",  delivery:"2–4 days", shipping:50,  sizes:["Size 4","Size 5"]},
+    {id:"f2", name:"Adidas Tiro League Ball",         price:2999,  rating:4.5, desc:"FIFA approved TPU ball for outdoor match play.",                                            brand:"Adidas", delivery:"3–5 days", shipping:0,   sizes:["Size 4","Size 5"]},
+    {id:"f3", name:"Puma teamFINAL Gloves",           price:3499,  rating:4.3, desc:"Latex palm goalkeeper gloves for excellent grip.",                                          brand:"Puma",   delivery:"2–4 days", shipping:70,  sizes:["S","M","L","XL"]},
+    {id:"f4", name:"Nike Premier League Strike",      price:7999,  rating:4.6, desc:"High-visibility design with 12-panel construction for accuracy.",                          brand:"Nike",   delivery:"3–5 days", shipping:0,   sizes:["Size 4","Size 5"]},
+    {id:"f5", name:"Adidas Copa Sense.1 FG",          price:34999, rating:4.8, desc:"Leather upper football boots for elite turf performance.",                                 brand:"Adidas", delivery:"4–6 days", shipping:0,   sizes:["UK 6","UK 7","UK 8","UK 9","UK 10"]},
+    {id:"f6", name:"Nike Mercurial Superfly 9",       price:74999, rating:4.9, desc:"Speed-focused football boot with ACC technology for wet and dry conditions.",               brand:"Nike",   delivery:"5–7 days", shipping:0,   sizes:["UK 7","UK 8","UK 9","UK 10"]},
+    {id:"f7", name:"Nivia Premier Match Ball",        price:1499,  rating:4.1, desc:"Rubber bladder match ball with 32-panel design.",                                          brand:"Nivia",  delivery:"2–4 days", shipping:50,  sizes:["Size 5"]},
+    {id:"f8", name:"Cosco Hi-Power Football",         price:549,   rating:4.0, desc:"Durable synthetic leather ball for training and casual matches.",                          brand:"Cosco",  delivery:"2–4 days", shipping:40,  sizes:["Size 4","Size 5"]},
+    {id:"f9", name:"Sondico Precision Shin Guards",   price:999,   rating:4.2, desc:"Lightweight shin guards with ankle support for safe play.",                                brand:"Sondico",delivery:"2–4 days", shipping:30,  sizes:["S","M","L"]},
+    {id:"f10",name:"Kipsta F500 Hybrid Ball",         price:19999, rating:4.4, desc:"Suitable for all surfaces — grass, gravel, and indoor courts.",                           brand:"Kipsta", delivery:"3–5 days", shipping:0,   sizes:["Size 4","Size 5"]},
+  ],
+  swimming:[
+    {id:"s1", name:"Speedo Fastskin Goggles",         price:1299,  rating:4.6, desc:"Anti-fog UV protected racing goggles.",                                                     brand:"Speedo", delivery:"3–5 days", shipping:0,   sizes:["One Size"]},
+    {id:"s2", name:"Arena Carbon Swim Cap",            price:549,   rating:4.3, desc:"Silicone cap that reduces drag for competitive swimmers.",                                  brand:"Arena",  delivery:"2–4 days", shipping:49,  sizes:["One Size"]},
+    {id:"s3", name:"Adidas Kickboard",                price:999,   rating:4.0, desc:"Foam kickboard for training and building endurance.",                                       brand:"Adidas", delivery:"3–5 days", shipping:60,  sizes:["Standard"]},
+    {id:"s4", name:"Speedo Biofuse 2.0 Goggles",      price:4999,  rating:4.7, desc:"Patented Biofuse technology molds to your face for a leak-free seal.",                     brand:"Speedo", delivery:"3–5 days", shipping:0,   sizes:["One Size"]},
+    {id:"s5", name:"Arena Powerskin ST 2.0",          price:14999, rating:4.5, desc:"Competition swimsuit with bodytone fabric for muscle support.",                            brand:"Arena",  delivery:"4–6 days", shipping:0,   sizes:["XS","S","M","L","XL"]},
+    {id:"s6", name:"TYR Hurricane Cat 1 Goggle",      price:2499,  rating:4.4, desc:"Wide-lens peripheral vision goggles with UV protection.",                                  brand:"TYR",    delivery:"3–5 days", shipping:50,  sizes:["One Size"]},
+    {id:"s7", name:"Nabaiji Hand Paddles",             price:799,   rating:4.1, desc:"Ergonomic swim paddles to build upper body strength.",                                     brand:"Nabaiji",delivery:"2–4 days", shipping:40,  sizes:["S","M","L"]},
+    {id:"s8", name:"Speedo Aqua Elite Shorts",         price:7999,  rating:4.3, desc:"Chlorine-resistant swim shorts with compression waistband.",                              brand:"Speedo", delivery:"3–5 days", shipping:0,   sizes:["S","M","L","XL"]},
+    {id:"s9", name:"Arena Pull Kick Float",            price:699,   rating:4.2, desc:"Dual-use pull buoy and kickboard in one compact training tool.",                          brand:"Arena",  delivery:"2–4 days", shipping:49,  sizes:["Standard"]},
+    {id:"s10",name:"TYR Sport Aqua Fins",             price:34999, rating:4.4, desc:"Professional carbon-blade fins for competitive speed training.",                           brand:"TYR",    delivery:"3–5 days", shipping:60,  sizes:["S/M","L/XL"]},
+  ],
+};
+
+function getProduct(id){ for(const c of Object.values(PRODUCTS)){const p=c.find(x=>x.id===id);if(p)return p;} return null; }
+function stars(r){return '★'.repeat(Math.floor(r))+'☆'.repeat(5-Math.floor(r))+` ${r}`;}
+
+/* ─────────────────────────────────────────
+   CART SYNC
+───────────────────────────────────────── */
+function syncCart(){
+  const n=state.cart.length;
+  document.getElementById('sb-cart-count').textContent=n;
+  // refresh cart panel if open
+  renderCartPanel();
+}
+
+/* ─────────────────────────────────────────
+   TOAST
+───────────────────────────────────────── */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ─────────────────────────────────────────
+   PRODUCT DETAIL PANEL
+───────────────────────────────────────── */
+function selectSize(size){
+  state.selectedSize = size;
+  // update button styles
+  document.querySelectorAll('.size-btn').forEach(btn=>{
+    btn.classList.toggle('selected', btn.dataset.size === size);
+  });
+  // update label
+  const lbl = document.getElementById('size-chosen');
+  if(lbl) lbl.textContent = size;
+  // hide error if shown
+  const err = document.getElementById('size-error');
+  if(err) err.classList.remove('show');
+}
+
+function openDetailPanel(id){
+  const p=getProduct(id); if(!p) return;
+  state.panelProduct=p;
+  state.selectedSize=p.sizes.length===1 ? p.sizes[0] : null; // auto-select if only one size
+  const inCart=!!state.cart.find(i=>i.id===id);
+  const img=IMG[id]||'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop';
+
+  const sizeButtons = p.sizes.map(s=>`
+    <button class="size-btn${state.selectedSize===s?' selected':''}" data-size="${s}" onclick="selectSize('${s}')">${s}</button>
+  `).join('');
+
+  const sizeSection = `
+    <div class="size-section">
+      <div class="size-label">
+        Select Size
+        <span id="size-chosen">${state.selectedSize||''}</span>
+      </div>
+      <div class="size-grid">${sizeButtons}</div>
+      <div class="size-required" id="size-error">Please select a size to continue</div>
+    </div>`;
+
+  document.getElementById('panel-body').innerHTML=`
+    <div class="panel-img-wrap"><img src="${img}" alt="${p.name}" loading="lazy"></div>
+    <div class="panel-info">
+      <div class="panel-brand-tag">${p.brand}</div>
+      <div class="panel-pname">${p.name}</div>
+      <div class="panel-price">&#8377;${p.price.toLocaleString()}</div>
+      <div class="panel-rating">${stars(p.rating)}</div>
+      <p class="panel-desc">${p.desc}</p>
+      ${sizeSection}
+      <div class="spec-row"><span class="slbl">Brand</span><span class="sval">${p.brand}</span></div>
+      <div class="spec-row"><span class="slbl">Delivery</span><span class="sval">${p.delivery}</span></div>
+      <div class="spec-row"><span class="slbl">Shipping</span><span class="sval">${p.shipping===0?'FREE':'&#8377;'+p.shipping}</span></div>
+      <div class="spec-row"><span class="slbl">Return</span><span class="sval">7-day easy return</span></div>
+      <div class="spec-row"><span class="slbl">In Stock</span><span class="sval" style="color:var(--accent)">Available</span></div>
+    </div>`;
+
+  document.getElementById('panel-actions').innerHTML=`
+    <button class="pbtn ${inCart?'pbtn-added':'pbtn-solid'}" id="panel-cart-btn" onclick="panelAddToCart()">
+      ${inCart?'Added to Cart':'Add to Cart'}
+    </button>
+    <button class="pbtn pbtn-navy" onclick="panelBuyNow()">Buy Now</button>`;
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.add('shift-right');
+}
+
+function requireSize(){
+  if(!state.selectedSize){
+    const err=document.getElementById('size-error');
+    if(err){ err.classList.add('show'); err.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+    return false;
+  }
+  return true;
+}
+
+function closeDetailPanel(){
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.remove('shift-right');
+}
+
+function panelAddToCart(){
+  if(!requireSize()) return;
+  if(!state.panelProduct) return;
+  addToCart(state.panelProduct.id, false);
+  const btn=document.getElementById('panel-cart-btn');
+  if(btn){btn.textContent='Added to Cart';btn.className='pbtn pbtn-added';}
+  openCartPanel();
+}
+
+function panelBuyNow(){
+  if(!requireSize()) return;
+  closeDetailPanel();
+  buyNow(state.panelProduct.id);
+}
+
+/* ─────────────────────────────────────────
+   CART PANEL
+───────────────────────────────────────── */
+function renderCartPanel(){
+  const body=document.getElementById('cart-panel-body');
+  const footer=document.getElementById('cart-panel-footer');
+  document.getElementById('cp-count').textContent=state.cart.length;
+
+  if(state.cart.length===0){
+    body.innerHTML='<div class="cart-empty">Your cart is empty.<br>Start shopping!</div>';
+    footer.style.display='none'; return;
+  }
+
+  const subtotal=state.cart.reduce((s,i)=>s+i.price,0);
+  const ship=state.cart.reduce((s,i)=>s+i.shipping,0);
+  const total=subtotal+ship;
+
+  body.innerHTML='<div style="padding:8px 0;">'+state.cart.map(it=>`
+    <div class="cp-item">
+      <img class="cp-item-img" src="${IMG[it.id]||''}" alt="${it.name}" loading="lazy">
+      <div class="cp-item-info">
+        <div class="cp-item-brand">${it.brand}</div>
+        <div class="cp-item-name">${it.name}</div>
+        ${it.selectedSize ? `<div style="font-size:10.5px;color:var(--muted);margin-top:1px;">Size: <strong>${it.selectedSize}</strong></div>` : ''}
+        <div class="cp-item-price">&#8377;${it.price.toLocaleString()}</div>
+      </div>
+      <button class="cp-remove" onclick="removeFromCart('${it.id}')" title="Remove">&#10005;</button>
+    </div>`).join('')+'</div>';
+
+  document.getElementById('cp-total').innerHTML='&#8377;'+total.toLocaleString();
+  document.getElementById('cp-ship-note').textContent=ship>0?`Includes ₹${ship} shipping`:'Free shipping on all items';
+  footer.style.display='block';
+}
+
+function openCartPanel(){
+  renderCartPanel();
+  document.getElementById('cart-panel').classList.add('open');
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.add('shift-right');
+}
+function closeCartPanel(){
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.remove('shift-right');
+}
+
+/* ─────────────────────────────────────────
+   CHECKOUT PANEL
+───────────────────────────────────────── */
+const coState = {
+  step: 0,          // 0=address, 1=payment, 2=processing/confirm
+  selectedAddr: 0,
+  selectedDel: 0,
+  selectedPay: 0,   // 0=UPI, 1=Card, 2=NetBanking, 3=COD
+};
+
+const ADDRESSES = [
+  { tag:'Home', name:'Rahul Singh', line:'42, Lajpat Nagar II, New Delhi – 110024', phone:'+91 98765 43210' },
+  { tag:'Work', name:'Rahul Singh', line:'SportZone HQ, Connaught Place, New Delhi – 110001', phone:'+91 98765 43210' },
+];
+
+const DELIVERY_OPTS = [
+  { name:'Standard Delivery', sub:'Delivered in 3–5 business days', price:'FREE', val:0 },
+  { name:'Express Delivery',  sub:'Delivered in 1–2 business days', price:'₹99',  val:99 },
+  { name:'Same Day Delivery', sub:'Order before 12 PM for same day', price:'₹199', val:199 },
+];
+
+const PAY_METHODS = [
+  { id:'upi',  label:'UPI',         sub:'Google Pay, PhonePe, Paytm' },
+  { id:'card', label:'CARD',        sub:'Credit / Debit card' },
+  { id:'net',  label:'NET',         sub:'Net Banking' },
+  { id:'cod',  label:'COD',         sub:'Cash on Delivery' },
+];
+
+function openCheckoutPanel(){
+  if(state.cart.length===0){ showToast('Your cart is empty!'); return; }
+  coState.step=0; coState.selectedAddr=0; coState.selectedDel=0; coState.selectedPay=0;
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('checkout-panel').classList.add('open');
+  document.getElementById('chat-col').classList.add('shift-right');
+  renderCoStep();
+}
+
+function closeCheckoutPanel(){
+  document.getElementById('checkout-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.remove('shift-right');
+}
+
+function setCoStepUI(active){
+  for(let i=0;i<3;i++){
+    const s=document.getElementById('co-step-'+i);
+    s.className='co-step'+(i<active?' done':i===active?' active':'');
+  }
+  for(let i=0;i<2;i++){
+    document.getElementById('co-line-'+i).className='co-step-line'+(i<active?' done':'');
+  }
+  const titles=['Delivery Address','Payment Method','Order Confirmed'];
+  document.getElementById('co-panel-title').textContent=titles[active]||'Checkout';
+}
+
+function coCartTotal(){
+  const sub=state.cart.reduce((s,i)=>s+i.price,0);
+  const ship=DELIVERY_OPTS[coState.selectedDel].val;
+  return {sub, ship, total:sub+ship};
+}
+
+function renderCoStep(){
+  setCoStepUI(coState.step);
+  if(coState.step===0) renderCoAddress();
+  else if(coState.step===1) renderCoPayment();
+  else if(coState.step===2) renderCoProcessing();
+}
+
+/* ── STEP 0: ADDRESS ── */
+function renderCoAddress(){
+  const body=document.getElementById('co-body');
+  const {sub,ship,total}=coCartTotal();
+
+  body.innerHTML=`
+    <div class="co-section-title">Select Delivery Address</div>
+    <div class="addr-list" id="addr-list">
+      ${ADDRESSES.map((a,i)=>`
+        <div class="addr-card${i===coState.selectedAddr?' selected':''}" onclick="selectAddr(${i})">
+          <div class="addr-card-top">
+            <span class="addr-tag${a.tag==='Work'?' work':''}">${a.tag}</span>
+            <div class="addr-select-dot"></div>
+          </div>
+          <div class="addr-name">${a.name}</div>
+          <div class="addr-line">${a.line}</div>
+          <div class="addr-line">${a.phone}</div>
+        </div>`).join('')}
+      <button class="addr-add-btn" style="display:none;">+ Add New Address</button>
+    </div>
+
+    <div class="co-section-title" style="margin-top:4px;">Delivery Speed</div>
+    <div class="delivery-opts" id="del-opts">
+      ${DELIVERY_OPTS.map((d,i)=>`
+        <div class="del-opt${i===coState.selectedDel?' selected':''}" onclick="selectDel(${i})">
+          <div class="del-dot"></div>
+          <div class="del-opt-left">
+            <div class="del-opt-name">${d.name}</div>
+            <div class="del-opt-sub">${d.sub}</div>
+          </div>
+          <div class="del-opt-price">${d.price}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="co-section-title" style="margin-top:4px;">Order Summary</div>
+    <div class="co-order-mini">
+      ${state.cart.map(it=>`<div class="co-order-row"><span class="lbl">${it.name}</span><span>&#8377;${it.price.toLocaleString()}</span></div>`).join('')}
+      <div class="co-order-row"><span class="lbl">Shipping</span><span>${ship===0?'FREE':'&#8377;'+ship}</span></div>
+      <div class="co-order-row total"><span>Total</span><span>&#8377;${total.toLocaleString()}</span></div>
+    </div>`;
+
+  document.getElementById('co-footer').innerHTML=`
+    <div class="cp-total-row">
+      <span class="co-total-lbl">Total Payable</span>
+      <span class="co-total-amt" id="co-total-disp">&#8377;${total.toLocaleString()}</span>
+    </div>
+    <button class="co-next-btn" onclick="coNext()">Continue to Payment</button>`;
+}
+
+function selectAddr(i){
+  coState.selectedAddr=i;
+  document.querySelectorAll('.addr-card').forEach((c,j)=>c.classList.toggle('selected',j===i));
+}
+
+function selectDel(i){
+  coState.selectedDel=i;
+  document.querySelectorAll('.del-opt').forEach((c,j)=>c.classList.toggle('selected',j===i));
+  // update total display
+  const {total}=coCartTotal();
+  const el=document.getElementById('co-total-disp');
+  if(el) el.innerHTML='&#8377;'+total.toLocaleString();
+  // update order mini
+  renderCoAddress();
+}
+
+/* ── STEP 1: PAYMENT ── */
+function renderCoPayment(){
+  const {total}=coCartTotal();
+  const body=document.getElementById('co-body');
+
+  body.innerHTML=`
+    <div class="co-section-title">Choose Payment Method</div>
+    <div class="pay-methods" id="pay-methods">
+      ${PAY_METHODS.map((m,i)=>`
+        <div class="pay-card${i===coState.selectedPay?' selected':''}" onclick="selectPay(${i})">
+          <div class="pay-icon ${m.id}">${m.label}</div>
+          <div class="pay-info">
+            <div class="pay-name">${
+              m.id==='upi'?'UPI Payment':
+              m.id==='card'?'Credit / Debit Card':
+              m.id==='net'?'Net Banking':'Cash on Delivery'
+            }</div>
+            <div class="pay-sub">${m.sub}</div>
+          </div>
+          <div class="pay-dot"></div>
+        </div>`).join('')}
+    </div>
+    <div id="pay-extra"></div>
+
+    <div class="co-section-title" style="margin-top:8px;">Delivering To</div>
+    <div class="co-order-mini" style="margin-bottom:0;">
+      <div class="co-order-row"><span class="lbl">Address</span><span style="text-align:right;max-width:170px;font-size:11.5px;">${ADDRESSES[coState.selectedAddr].line}</span></div>
+      <div class="co-order-row"><span class="lbl">Speed</span><span>${DELIVERY_OPTS[coState.selectedDel].name}</span></div>
+    </div>`;
+
+  renderPayExtra();
+
+  document.getElementById('co-footer').innerHTML=`
+    <div class="cp-total-row">
+      <span class="co-total-lbl">Amount to Pay</span>
+      <span class="co-total-amt">&#8377;${total.toLocaleString()}</span>
+    </div>
+    <button class="co-next-btn" onclick="coNext()">Pay &#8377;${total.toLocaleString()}</button>
+    <button class="co-back-btn" onclick="coBack()">Back to Address</button>`;
+}
+
+function renderPayExtra(){
+  const extra=document.getElementById('pay-extra');
+  if(!extra) return;
+  if(coState.selectedPay===0){
+    extra.innerHTML=`<div class="upi-input-wrap"><input type="text" placeholder="Enter UPI ID (e.g. rahul@upi)" id="upi-id-input"><button class="upi-verify-btn" onclick="verifyUPI()">Verify</button></div>`;
+  } else if(coState.selectedPay===1){
+    extra.innerHTML=`<div class="card-fields">
+      <div class="card-field"><label>Card Number</label><input type="text" placeholder="0000 0000 0000 0000" maxlength="19"></div>
+      <div class="card-row">
+        <div class="card-field"><label>Expiry</label><input type="text" placeholder="MM / YY" maxlength="7"></div>
+        <div class="card-field"><label>CVV</label><input type="password" placeholder="•••" maxlength="3"></div>
+      </div>
+      <div class="card-field"><label>Name on Card</label><input type="text" placeholder="Rahul Singh"></div>
+    </div>`;
+  } else {
+    extra.innerHTML='';
+  }
+}
+
+function selectPay(i){
+  coState.selectedPay=i;
+  document.querySelectorAll('.pay-card').forEach((c,j)=>c.classList.toggle('selected',j===i));
+  renderPayExtra();
+}
+
+function verifyUPI(){
+  const inp=document.getElementById('upi-id-input');
+  if(inp&&inp.value.includes('@')){ showToast('UPI ID verified!'); }
+  else { showToast('Enter a valid UPI ID'); }
+}
+
+/* ── STEP 2: PROCESSING → SUCCESS ── */
+function renderCoProcessing(){
+  setCoStepUI(2);
+  document.getElementById('co-body').innerHTML=`
+    <div class="processing-wrap">
+      <div class="processing-spinner"></div>
+      <div class="processing-title">Processing Payment</div>
+      <div class="processing-sub">Please wait, do not close this window…</div>
+    </div>`;
+  document.getElementById('co-footer').innerHTML='';
+
+  setTimeout(()=>{
+    renderCoSuccess();
+  }, 2200);
+}
+
+function renderCoSuccess(){
+  const {sub,ship,total}=coCartTotal();
+  const oid='SPZ-2026-'+Math.floor(Math.random()*9000+1000);
+  const addr=ADDRESSES[coState.selectedAddr];
+  const del=DELIVERY_OPTS[coState.selectedDel];
+
+  // Push orders to state
+  state.cart.forEach(item=>{
+    state.orders.push({
+      id:oid, product:item.name, pid:item.id,
+      date: new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}),
+      status:'Confirmed',
+      tracking:['Ordered','Confirmed','Shipped','Delivered'],
+      currentStep:1, estimate:del.name==='Same Day Delivery'?'Today by 8 PM':del.name==='Express Delivery'?'In 1–2 days':'In 3–5 days'
+    });
+  });
+  state.cart=[]; syncCart();
+
+  document.getElementById('co-body').innerHTML=`
+    <div class="success-wrap">
+      <div class="success-check">&#10003;</div>
+      <div class="success-title">Order Placed!</div>
+      <div class="success-sub">Your payment was successful. We'll send updates via SMS.</div>
+      <div class="success-order-box">
+        <div class="success-row"><span class="lbl">Order ID</span><span class="val">${oid}</span></div>
+        <div class="success-row"><span class="lbl">Items</span><span class="val">${state.orders.filter(o=>o.id===oid).length} item(s)</span></div>
+        <div class="success-row"><span class="lbl">Total Paid</span><span class="val">&#8377;${total.toLocaleString()}</span></div>
+        <div class="success-row"><span class="lbl">Payment</span><span class="val">${['UPI','Card','Net Banking','Cash on Delivery'][coState.selectedPay]}</span></div>
+        <div class="success-row"><span class="lbl">Deliver To</span><span class="val">${addr.tag} – ${addr.name}</span></div>
+        <div class="success-row"><span class="lbl">Delivery</span><span class="val">${del.name}</span></div>
+        <div class="success-row"><span class="lbl">Estimate</span><span class="val" style="color:var(--accent)">${state.orders.find(o=>o.id===oid)?.estimate||'3–5 days'}</span></div>
+      </div>
+    </div>`;
+
+  document.getElementById('co-footer').innerHTML=`
+    <button class="co-next-btn" onclick="closeCheckoutPanel();sendQuick('Track my order');">Track Your Order</button>
+    <button class="co-back-btn" onclick="closeCheckoutPanel();sendQuick('Show me cricket bats');">Continue Shopping</button>`;
+
+  // Post message in chat
+  setTimeout(()=>{
+    appendMsg('ai',`<p>Your order <strong>${oid}</strong> has been placed successfully! Estimated delivery: <strong>${state.orders.find(o=>o.id===oid)?.estimate}</strong>.</p>`);
+  }, 400);
+}
+
+/* ── NAV HELPERS ── */
+function coNext(){
+  coState.step=Math.min(coState.step+1,2);
+  renderCoStep();
+}
+function coBack(){
+  coState.step=Math.max(coState.step-1,0);
+  renderCoStep();
+}
+
+/* ─────────────────────────────────────────
+   CHAT HELPERS
+───────────────────────────────────────── */
+function appendMsg(role,html){
+  const msgs=document.getElementById('messages');
+  const div=document.createElement('div');
+  const isWide = role==='ai' && html.includes('carousel-wrap');
+  const isTrack = role==='ai' && html.includes('track-bar');
+  let cls = `msg ${role}`;
+  if(role==='ai' && isWide) cls = `msg ${role}`;
+  else if(role==='ai' && isTrack) cls = `msg ${role} track-msg`;
+  else if(role==='ai') cls = `msg ${role} narrow-msg`;
+  div.className=cls;
+  const av=document.createElement('div'); av.className='msg-av'; av.textContent=role==='ai'?'AI':'R';
+  const bubble=document.createElement('div'); bubble.className='bubble'; bubble.innerHTML=html;
+  div.appendChild(av); div.appendChild(bubble);
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function showTyping(){
+  const msgs=document.getElementById('messages');
+  const div=document.createElement('div'); div.className='msg ai'; div.id='typing-ind';
+  const av=document.createElement('div'); av.className='msg-av'; av.textContent='AI';
+  const b=document.createElement('div'); b.className='bubble';
+  b.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  div.appendChild(av); div.appendChild(b); msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+function removeTyping(){const e=document.getElementById('typing-ind');if(e)e.remove();}
+
+/* ─────────────────────────────────────────
+   RENDER HELPERS
+───────────────────────────────────────── */
+/* ─────────────────────────────────────────
+   RENDER PRODUCTS — horizontal scroll carousel
+───────────────────────────────────────── */
+function renderProducts(list){
+  const cards = list.map(p=>`
+    <div class="product-card">
+      <img class="product-img" src="${IMG[p.id]||''}" alt="${p.name}" loading="lazy">
+      <div class="product-info">
+        <div class="pc-brand">${p.brand}</div>
+        <div class="pc-name">${p.name}</div>
+        <div class="pc-price">&#8377;${p.price.toLocaleString()}</div>
+        <div class="pc-rating">${stars(p.rating)}</div>
+        <div class="pc-desc">${p.desc}</div>
+        <div class="pc-actions">
+          <button class="pc-btn pc-btn-solid"   onclick="addToCartChat('${p.id}')">Add to Cart</button>
+          <button class="pc-btn pc-btn-outline" onclick="openDetailPanel('${p.id}')">View Details</button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  return `<div class="carousel-wrap">
+    <div class="carousel-nav">
+      <span class="carousel-count">Showing ${list.length} products &nbsp;·&nbsp; scroll to see more</span>
+    </div>
+    <div class="carousel-viewport">
+      <div class="carousel-track">${cards}</div>
+    </div>
+  </div>`;
+}
+
+// stub so resize observer doesn't error
+function carInit(){}
+function carMove(){}
+function carJump(){}
+
+function renderCart(){
+  if(state.cart.length===0) return `<p style="color:var(--muted);font-size:13px;">Your cart is empty.</p>`;
+  const sub=state.cart.reduce((s,i)=>s+i.price,0);
+  const ship=state.cart.reduce((s,i)=>s+i.shipping,0);
+  const total=sub+ship;
+  return `<div class="cart-summary">
+    <div class="cart-title">Cart — ${state.cart.length} item${state.cart.length>1?'s':''}</div>
+    ${state.cart.map(it=>`
+      <div class="cart-item">
+        <img class="ci-img" src="${IMG[it.id]||''}" alt="${it.name}" loading="lazy">
+        <div class="cart-item-info">
+          <div class="cart-item-name">${it.name}</div>
+          <div class="cart-item-sub">Ship: ${it.shipping===0?'FREE':'&#8377;'+it.shipping}</div>
+        </div>
+        <div class="cart-item-price">&#8377;${it.price.toLocaleString()}</div>
+        <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 3px;" onclick="removeFromCart('${it.id}')" title="Remove">&#10005;</button>
+      </div>`).join('')}
+    <div class="cart-total">
+      <div class="cart-total-label">Subtotal &#8377;${sub.toLocaleString()} + Ship &#8377;${ship}</div>
+      <div class="cart-total-amount">&#8377;${total.toLocaleString()}</div>
+    </div>
+    <div class="action-row" style="margin-top:10px;">
+      <button class="action-btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" onclick="checkout()">Checkout</button>
+      <button class="action-btn" onclick="openCartPanel()">View Cart Panel</button>
+    </div>
+  </div>`;
+}
+
+function renderOrderConfirmation(item){
+  const total=item.price+item.shipping;
+  const oid='SPZ-2026-'+Math.floor(Math.random()*9000+1000);
+  state.orders.push({id:oid,product:item.name,pid:item.id,
+    date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}),
+    status:"Confirmed",tracking:["Ordered","Confirmed","Shipped","Delivered"],currentStep:1,estimate:"3–5 business days"});
+  return `<div class="order-confirm">
+    <div class="confirm-header">Order Confirmed!</div>
+    <div class="confirm-row"><span class="label">Order ID</span><span class="val">${oid}</span></div>
+    <div class="confirm-row"><span class="label">Product</span><span class="val">${item.name}</span></div>
+    <div class="confirm-row"><span class="label">Price</span><span class="val">&#8377;${item.price.toLocaleString()}</span></div>
+    <div class="confirm-row"><span class="label">Shipping</span><span class="val">${item.shipping===0?'FREE':'&#8377;'+item.shipping}</span></div>
+    <div class="confirm-row"><span class="label">Total</span><span class="val" style="color:var(--accent);font-weight:700;">&#8377;${total.toLocaleString()}</span></div>
+    <div class="confirm-row"><span class="label">Address</span><span class="val">New Delhi, 110001</span></div>
+    <div class="confirm-row"><span class="label">Est. Delivery</span><span class="val">3–5 business days</span></div>
+  </div>`;
+}
+
+function renderTracking(order){
+  const steps=order.tracking, cur=order.currentStep;
+  return `<div class="cart-summary">
+    <div class="cart-title">Order Tracking</div>
+    <div class="confirm-row"><span class="label">Order ID</span><span class="val">${order.id}</span></div>
+    <div class="confirm-row"><span class="label">Product</span><span class="val">${order.product}</span></div>
+    <div class="confirm-row"><span class="label">Status</span><span class="val" style="color:var(--accent)">${order.status}</span></div>
+    <div class="confirm-row"><span class="label">Estimate</span><span class="val">${order.estimate}</span></div>
+    <div class="track-bar">${steps.map((s,i)=>`
+      ${i>0?`<div class="track-line ${i<=cur?'done':''}"></div>`:''}
+      <div class="track-step">
+        <div class="track-dot ${i<cur?'done':i===cur?'active':''}">${i<cur?'&#10003;':i===cur?'&#9679;':''}</div>
+        <div class="track-label ${i===cur?'active-lbl':''}">${s}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderRecos(product){
+  const map={
+    c:[{n:'Cricket Gloves',p:'&#8377;699',pid:'c1'},{n:'Cricket Helmet',p:'&#8377;1299',pid:'c2'},{n:'Batting Pads',p:'&#8377;1499',pid:'c3'}],
+    r:[{n:'Running Socks',p:'&#8377;399',pid:'r1'},{n:'Dri-Fit Shorts',p:'&#8377;899',pid:'r2'},{n:'Compression Sleeves',p:'&#8377;499',pid:'r3'}],
+    b:[{n:'Shuttlecocks 6pk',p:'&#8377;299',pid:'b1'},{n:'Racket Bag',p:'&#8377;899',pid:'b2'},{n:'Court Shorts',p:'&#8377;699',pid:'b3'}],
+    f:[{n:'Shin Guards',p:'&#8377;499',pid:'f1'},{n:'Football Jersey',p:'&#8377;799',pid:'f2'},{n:'Mini Goal Post',p:'&#8377;2499',pid:'f3'}],
+    s:[{n:'Swim Shorts',p:'&#8377;999',pid:'s1'},{n:'Swim Shampoo',p:'&#8377;349',pid:'s2'},{n:'Waterproof Bag',p:'&#8377;799',pid:'s3'}],
+  };
+  const items=map[product.id[0]]||map.c;
+  return `<div class="reco-list">${items.map(i=>`
+    <div class="reco-item" onclick="openDetailPanel('${i.pid}')">
+      <img class="reco-img" src="${IMG[i.pid]||''}" alt="${i.n}" loading="lazy">
+      <div class="reco-item-info"><div class="reco-item-name">${i.n}</div><div class="reco-item-price">${i.p}</div></div>
+      <div class="reco-arrow">&#8250;</div>
+    </div>`).join('')}</div>`;
+}
+
+function openOrderDetailPanel(orderId, type){
+  const o = state.orders.find(x=>x.id===orderId); if(!o) return;
+  const img = IMG[o.pid||'c1']||'';
+  const p = getProduct(o.pid||'c1');
+
+  // Build tracking steps HTML
+  const steps = o.tracking, cur = o.currentStep;
+  const trackBar = `<div class="track-bar">${steps.map((s,i)=>`
+    ${i>0?`<div class="track-line ${i<=cur?'done':''}"></div>`:''}
+    <div class="track-step">
+      <div class="track-dot ${i<cur?'done':i===cur?'active':''}">${i<cur?'&#10003;':i===cur?'&#9679;':''}</div>
+      <div class="track-label ${i===cur?'active-lbl':''}">${s}</div>
+    </div>`).join('')}
+  </div>`;
+
+  // Action buttons based on type
+  let actions = '';
+  if(type === 'reorder'){
+    actions = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+      <button class="pbtn pbtn-solid" onclick="reorderProduct('${o.pid||'c1'}')">Reorder This Item</button>
+      ${p ? `<button class="pbtn pbtn-slate" onclick="closeOrderDetailPanel();openDetailPanel('${o.pid||'c1'}')">View Product Details</button>` : ''}
+    </div>`;
+  } else if(type === 'delay'){
+    actions = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+      <button class="pbtn pbtn-amber" onclick="raiseDelayTicket('${o.id}');closeOrderDetailPanel()">Raise Delay Complaint</button>
+      <button class="pbtn pbtn-red" onclick="closeOrderDetailPanel();sendQuick('return my order')">Request Return</button>
+    </div>`;
+  } else if(type === 'refund'){
+    actions = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+      <button class="pbtn pbtn-amber" onclick="closeOrderDetailPanel();sendQuick('refund_order_${o.id}')">Request Refund</button>
+    </div>`;
+  }
+
+  // Product spec rows (if product exists in catalog)
+  const productInfo = p ? `
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;margin-bottom:6px;">Product Info</div>
+      <div class="confirm-row"><span class="label">Brand</span><span class="val">${p.brand}</span></div>
+      <div class="confirm-row"><span class="label">Price Paid</span><span class="val" style="color:var(--accent)">&#8377;${p.price.toLocaleString()}</span></div>
+      <div class="confirm-row"><span class="label">Rating</span><span class="val">${stars(p.rating)}</span></div>
+      <div class="confirm-row"><span class="label">Delivery</span><span class="val">${p.delivery}</span></div>
+    </div>` : '';
+
+  document.getElementById('order-detail-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 0 12px;border-bottom:1px solid var(--border);">
+      <img src="${img}" alt="${o.product}" style="width:64px;height:64px;border-radius:8px;object-fit:cover;background:var(--surface2);flex-shrink:0;">
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--accent);letter-spacing:0.5px;margin-bottom:3px;">Your Order</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.3;">${o.product}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${o.id}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="confirm-row"><span class="label">Order Date</span><span class="val">${o.date}</span></div>
+      <div class="confirm-row"><span class="label">Status</span><span class="val" style="color:var(--accent)">${o.status}</span></div>
+      <div class="confirm-row"><span class="label">Estimate</span><span class="val">${o.estimate}</span></div>
+    </div>
+
+    ${productInfo}
+
+    <div style="margin-top:14px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;margin-bottom:4px;">Tracking</div>
+      ${trackBar}
+    </div>
+    ${actions}`;
+
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('cart-panel').classList.remove('open');
+  document.getElementById('order-detail-panel').classList.add('open');
+  document.getElementById('chat-col').classList.add('shift-right');
+}
+
+function reorderProduct(pid){
+  const p = getProduct(pid); if(!p) return;
+  state.selectedSize = p.sizes[0]; // default to first size
+  addToCart(pid, false);
+  closeOrderDetailPanel();
+  appendMsg('ai', `<p><strong>${p.name}</strong> has been added to your cart for reorder!</p>
+    <div class="action-row">
+      <button class="action-btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" onclick="openCartPanel()">View Cart</button>
+      <button class="action-btn" onclick="openDetailPanel('${pid}')">View Product</button>
+    </div>`);
+  setTimeout(()=>openCartPanel(), 400);
+}
+
+function closeOrderDetailPanel(){
+  document.getElementById('order-detail-panel').classList.remove('open');
+  document.getElementById('chat-col').classList.remove('shift-right');
+}
+
+function renderOrderListForSupport(type){
+  if(!state.orders.length) return `<p style="color:var(--muted);font-size:13px;">No orders found.</p>`;
+  return `<div class="order-select-list">${state.orders.map(o=>`
+    <div class="order-select-card" onclick="openOrderDetailPanel('${o.id}','${type}')">
+      <div class="osc-left">
+        <img class="osc-img" src="${IMG[o.pid||'c1']||''}" alt="${o.product}" loading="lazy">
+        <div class="osc-info">
+          <div class="osc-name">${o.product}</div>
+          <div class="osc-meta">${o.id} &nbsp;·&nbsp; ${o.date}</div>
+        </div>
+      </div>
+      <div class="osc-right">
+        <div class="osc-status ${o.status==='Delivered'?'st-done':o.status==='Confirmed'?'st-confirm':'st-active'}">${o.status}</div>
+        <div class="osc-arrow">&#8250;</div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+/* ─────────────────────────────────────────
+   PRODUCT ACTIONS
+───────────────────────────────────────── */
+function addToCart(id, silent=false){
+  const p=getProduct(id); if(!p) return false;
+  if(state.cart.find(i=>i.id===id)){
+    if(!silent) showToast(`${p.name} is already in cart!`);
+    return false;
+  }
+  // attach selected size (from panel) or default to first size
+  const size = state.selectedSize || p.sizes[0];
+  state.cart.push({...p, selectedSize: size});
+  syncCart();
+  showToast(`${p.name} (${size}) added to cart!`);
+  return true;
+}
+
+function addToCartChat(id){
+  const p=getProduct(id); if(!p) return;
+  const isNew=addToCart(id,true);
+  appendMsg('user',`Add ${p.name} to cart`);
+  setTimeout(()=>{
+    removeTyping();
+    if(isNew){
+      appendMsg('ai',`<p><strong>${p.name}</strong> has been added to your cart!</p>`);
+      openCartPanel();
+    } else {
+      appendMsg('ai',`<p><strong>${p.name}</strong> is already in your cart.</p>`);
+      openCartPanel();
+    }
+  },600);
+  showTyping();
+}
+
+function removeFromCart(id){
+  const p=getProduct(id);
+  state.cart=state.cart.filter(i=>i.id!==id);
+  syncCart();
+  if(p) showToast(`${p.name} removed from cart.`);
+  // If panel-cart-btn is showing this product, reset it
+  if(state.panelProduct&&state.panelProduct.id===id){
+    const btn=document.getElementById('panel-cart-btn');
+    if(btn){btn.textContent='Add to Cart';btn.className='pbtn pbtn-solid';}
+  }
+}
+
+function buyNow(id){
+  const p=getProduct(id); if(!p) return;
+  appendMsg('user',`Buy ${p.name} now`);
+  setTimeout(()=>{
+    removeTyping();
+    appendMsg('ai',`<p>Confirm your order for <strong>${p.name}</strong>:</p>
+      <div class="confirm-row"><span class="label">Price</span><span class="val">&#8377;${p.price.toLocaleString()}</span></div>
+      <div class="confirm-row"><span class="label">Shipping</span><span class="val">${p.shipping===0?'FREE':'&#8377;'+p.shipping}</span></div>
+      <div class="confirm-row"><span class="label">Address</span><span class="val">New Delhi, 110001</span></div>
+      <div class="action-row" style="margin-top:10px;">
+        <button class="action-btn" style="background:var(--accent);border-color:var(--accent);color:#fff;" onclick="confirmOrder('${p.id}')">Confirm Order</button>
+        <button class="action-btn" onclick="sendQuick('change shipping address')">Change Address</button>
+      </div>`);
+  },700); showTyping();
+}
+
+function confirmOrder(id){
+  const p=getProduct(id); if(!p) return;
+  appendMsg('user','Confirm my order');
+  state.cart=state.cart.filter(i=>i.id!==id);
+  syncCart();
+  setTimeout(()=>{
+    removeTyping();
+    appendMsg('ai',renderOrderConfirmation(p));
+    setTimeout(()=>appendMsg('ai',`<p>You might also like:</p>${renderRecos(p)}`),900);
+  },800); showTyping();
+}
+
+function checkout(){
+  if(state.cart.length===0){appendMsg('ai','<p>Your cart is empty.</p>');return;}
+  const item=state.cart[0];
+  appendMsg('user','Checkout');
+  state.cart=[]; syncCart();
+  setTimeout(()=>{removeTyping();appendMsg('ai',renderOrderConfirmation(item));},800);
+  showTyping();
+}
+
+function raiseDelayTicket(orderId){
+  const o=state.orders.find(x=>x.id===orderId); if(!o) return;
+  const tid='TKT-'+Math.floor(Math.random()*90000+10000);
+  appendMsg('user','Raise delay complaint');
+  setTimeout(()=>{
+    removeTyping();
+    appendMsg('ai',`<div class="order-confirm">
+      <div class="confirm-header">Complaint Raised</div>
+      <div class="confirm-row"><span class="label">Ticket ID</span><span class="val">${tid}</span></div>
+      <div class="confirm-row"><span class="label">Order</span><span class="val">${o.product}</span></div>
+      <div class="confirm-row"><span class="label">Issue</span><span class="val" style="color:var(--warn)">Delivery Delay</span></div>
+      <div class="confirm-row"><span class="label">Response</span><span class="val">Within 2 hours</span></div>
+      <div class="confirm-row"><span class="label">Compensation</span><span class="val" style="color:var(--accent)">&#8377;50 coupon applied</span></div>
+    </div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted);">Our logistics team will update you via SMS.</p>`);
+  },700); showTyping();
+}
+
+/* ─────────────────────────────────────────
+   RESPOND LOGIC
+───────────────────────────────────────── */
+
+// All products flat list
+function allProducts(){ return Object.values(PRODUCTS).flat(); }
+
+// Extract price cap (max) — handles: "under 5000", "below 3k", "less than 2000", "upto 4000", "5000 budget", "₹5000", "rs 5000"
+function extractPrice(m){
+  const s = m.replace(/,/g,'').replace(/(\d+)\s*k\b/gi, (_, n) => String(parseInt(n)*1000));
+  const patterns = [
+    /under\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /below\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /less\s*than\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /upto\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /up\s*to\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /within\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /max(?:imum)?\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /(?:rs\.?|₹|inr)\s*(\d+)/,
+    /(\d+)\s*(?:rs\.?|inr|rupees?|budget|max|limit)/,
+  ];
+  for(const re of patterns){
+    const match = s.match(re);
+    if(match) return parseInt(match[1]);
+  }
+  return null;
+}
+
+// Extract price floor (min) — handles: "starting from 2000", "above 3000", "more than 1500", "minimum 2000", "from 3000"
+function extractMinPrice(m){
+  const s = m.replace(/,/g,'').replace(/(\d+)\s*k\b/gi, (_, n) => String(parseInt(n)*1000));
+  const patterns = [
+    /starting\s*from\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /start\s*from\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /starts?\s*(?:at|@)\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /from\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /above\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /more\s*than\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /greater\s*than\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /over\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /min(?:imum)?\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /atleast\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+    /at\s*least\s*(?:rs\.?|inr|₹)?\s*(\d+)/,
+  ];
+  for(const re of patterns){
+    const match = s.match(re);
+    if(match) return parseInt(match[1]);
+  }
+  return null;
+}
+
+// Smart category detector
+function detectCategory(m){
+  // Cricket — check before generic shoe/sport keywords
+  if(m.match(/cricket|willow|sg\b|mrf\b|kookaburra|batting|cricket\s*bat|cricket\s*gear|cricket\s*equipment|cricket\s*pad|cricket\s*glove|cricket\s*helmet/))
+    return {label:'Cricket Gear', list:PRODUCTS.cricket};
+
+  // Badminton
+  if(m.match(/badminton|racket|racquet|shuttlecock|yonex|li-ning|li ning|victor\b|babolat|carlton\b/))
+    return {label:'Badminton Rackets', list:PRODUCTS.badminton};
+
+  // Football
+  if(m.match(/football|soccer|futsal|cleat|shin\s*guard|goalkeeper|nivia|kipsta|football\s*boot|football\s*shoe/))
+    return {label:'Football Gear', list:PRODUCTS.football};
+
+  // Swimming
+  if(m.match(/swim|swimming|goggle|swim\s*cap|kickboard|pool\s*gear|speedo|arena\b|tyr\b|nabaiji/))
+    return {label:'Swimming Gear', list:PRODUCTS.swimming};
+
+  // Running / Shoes — broad, catches "shoes", "sports shoes", "sneakers", brand names
+  if(m.match(/shoe|shoes|sneaker|trainer|footwear|running|jogging|marathon|sprint|nike|adidas|puma\b|asics|reebok|brooks\b|hoka\b|saucony|mizuno|new\s*balance/))
+    return {label:'Running Shoes', list:PRODUCTS.running};
+
+  // Generic product/shopping queries — show all
+  if(m.match(/show\s*me|show\s*all|all\s*product|browse|what.*(have|sell|got)|buy|shop|gear|equipment|sport|recommend|suggest|best|top\s*\d|budget|cheap|affordable|under\s*\d|below\s*\d|price|₹|\brs\b/))
+    return {label:'All Sports Products', list:allProducts()};
+
+  return null;
+}
+
+async function respond(userMsg){
+  const m = userMsg.toLowerCase();
+
+  // ── Product category detection (always returns carousel) ──
+  const cat = detectCategory(m);
+  if(cat){
+    let list = cat.list;
+    const maxPrice = extractPrice(m);
+    const minPrice = extractMinPrice(m);
+
+    if(minPrice !== null || maxPrice !== null){
+      const filtered = list.filter(p => {
+        const aboveMin = minPrice === null || p.price >= minPrice;
+        const belowMax = maxPrice === null || p.price <= maxPrice;
+        return aboveMin && belowMax;
+      });
+
+      if(!filtered.length){
+        const rangeLabel = minPrice && maxPrice
+          ? `between ₹${minPrice.toLocaleString()} – ₹${maxPrice.toLocaleString()}`
+          : minPrice ? `above ₹${minPrice.toLocaleString()}` : `under ₹${maxPrice.toLocaleString()}`;
+        const allPrices = list.map(p=>p.price);
+        return `<p>No <strong>${cat.label}</strong> found ${rangeLabel}. Range available: ₹${Math.min(...allPrices).toLocaleString()} – ₹${Math.max(...allPrices).toLocaleString()}. Showing all:</p>${renderProducts(list)}`;
+      }
+
+      const rangeLabel = minPrice && maxPrice
+        ? `between ₹${minPrice.toLocaleString()} – ₹${maxPrice.toLocaleString()}`
+        : minPrice ? `starting from ₹${minPrice.toLocaleString()}` : `under ₹${maxPrice.toLocaleString()}`;
+      return `<p><strong>${filtered.length} ${cat.label}</strong> ${rangeLabel}:</p>${renderProducts(filtered)}`;
+    }
+
+    return `<p>Here are all <strong>${list.length} ${cat.label}</strong> for you:</p>${renderProducts(list)}`;
+  }
+
+  // ── Cart ──
+  if(m.match(/my cart|view cart|open cart|show cart|basket/)){setTimeout(()=>openCartPanel(),200);return `<p>Opening your cart.</p>`;}
+
+  // ── Order tracking ──
+  if(m.match(/track|where is my order|order status|delivery status|shipment/)){
+    if(!state.orders.length) return `<p>No active orders found. Start shopping!</p>`;
+    return `<p>Latest order status:</p>${renderTracking(state.orders[state.orders.length-1])}`;
+  }
+
+  // ── Order history ──
+  if(m.match(/order history|my orders|past order|previous order|last purchase|show my order/)){
+    if(!state.orders.length) return `<p>No previous orders found.</p>`;
+    return `<p><strong>Your Order History</strong></p>${renderOrderListForSupport('reorder')}`;
+  }
+
+  // ── Reorder ──
+  if(m.includes('reorder')) return state.orders.length
+    ? `<p>Select the order you'd like to reorder:</p>${renderOrderListForSupport('reorder')}`
+    : `<p>No previous orders.</p>`;
+
+  // ── Return / Exchange ──
+  if(m.match(/return|damaged|exchange|wrong size|change size/)){
+    if(!state.orders.length) return `<p>No eligible orders for return.</p>`;
+    const o=state.orders[0];
+    return `<div class="return-card"><div class="return-header">Return Request Created</div>
+      <div class="confirm-row"><span class="label">Order ID</span><span class="val">${o.id}</span></div>
+      <div class="confirm-row"><span class="label">Product</span><span class="val">${o.product}</span></div>
+      <div class="confirm-row"><span class="label">Reason</span><span class="val">${m.includes('damage')?'Damaged Product':m.includes('size')?'Wrong Size':'Customer Request'}</span></div>
+      <div class="confirm-row"><span class="label">Pickup</span><span class="val" style="color:var(--accent)">Within 2 days</span></div>
+      <div class="confirm-row"><span class="label">Refund</span><span class="val">5–7 business days</span></div>
+    </div><p style="margin-top:8px;font-size:12px;color:var(--muted)">SMS confirmation will be sent shortly.</p>`;
+  }
+
+  // ── Support ──
+  if(m.match(/support|help me|issue|problem|complaint|contact/)){
+    return `<p>I'm here to help! What issue are you facing?</p>
+    <div class="action-row">
+      <button class="action-btn" onclick="sendQuick('My order is delayed')">Order Delayed</button>
+      <button class="action-btn" onclick="sendQuick('Refund status')">Refund Status</button>
+      <button class="action-btn" onclick="sendQuick('Payment issue')">Payment Issue</button>
+    </div>`;
+  }
+
+  // ── Delay ──
+  if(m.match(/delay|late|not arrived|hasn't come/)){
+    if(!state.orders.length) return `<p>No orders found.</p>`;
+    return `<p>Sorry about the delay. Select the order:</p>${renderOrderListForSupport('delay')}`;
+  }
+
+  // ── Refund ──
+  if(m.includes('refund')){
+    if(!state.orders.length) return `<p>No orders found.</p>`;
+    return `<p>Let's sort your refund. Which order?</p>${renderOrderListForSupport('refund')}`;
+  }
+
+  // ── Payment ──
+  if(m.match(/payment|transaction|charged|debit|upi fail/)){
+    return `<p>Sorry about the payment issue. Please check:</p>
+    <div class="confirm-row" style="margin-top:6px;"><span class="label">Bank Charges</span><span class="val">Auto-reversed in 3–5 days</span></div>
+    <div class="confirm-row"><span class="label">Failed Payment</span><span class="val">Amount not debited if failed</span></div>
+    <div class="confirm-row"><span class="label">UPI Issues</span><span class="val">Retry after 30 minutes</span></div>`;
+  }
+
+  // ── Internal support flow triggers ──
+  if(m.startsWith('delay_order_')){
+    const oid=m.replace('delay_order_','');
+    const o=state.orders.find(x=>x.id===oid); if(!o) return `<p>Order not found.</p>`;
+    return `<p>Status for <strong>${o.product}</strong>:</p>${renderTracking(o)}
+    <div class="action-row" style="margin-top:6px;">
+      <button class="action-btn" onclick="sendQuick('return my order')">Return Item</button>
+      <button class="action-btn" style="border-color:var(--accent);color:var(--accent);" onclick="raiseDelayTicket('${o.id}')">Raise Complaint</button>
+    </div>`;
+  }
+  if(m.startsWith('refund_order_')){
+    const oid=m.replace('refund_order_','');
+    const o=state.orders.find(x=>x.id===oid); if(!o) return `<p>Order not found.</p>`;
+    const tid='TKT-'+Math.floor(Math.random()*90000+10000);
+    return `<div class="order-confirm">
+      <div class="confirm-header">Refund Request Raised</div>
+      <div class="confirm-row"><span class="label">Ticket ID</span><span class="val">${tid}</span></div>
+      <div class="confirm-row"><span class="label">Order</span><span class="val">${o.product}</span></div>
+      <div class="confirm-row"><span class="label">Refund Status</span><span class="val" style="color:var(--warn)">Under Review</span></div>
+      <div class="confirm-row"><span class="label">Timeline</span><span class="val">5–7 business days</span></div>
+      <div class="confirm-row"><span class="label">Mode</span><span class="val">Original Payment Method</span></div>
+    </div>`;
+  }
+
+  // ── Address ──
+  if(m.includes('address')) return `<p>Saved address: <strong>New Delhi, 110001, India</strong></p><div class="action-row"><button class="action-btn">Keep This</button><button class="action-btn">Update Address</button></div>`;
+
+  return null; // falls through to API
+}
+
+/* ─────────────────────────────────────────
+   SEND MESSAGE
+───────────────────────────────────────── */
+async function sendMessage(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim(); if(!text) return;
+  input.value='';
+  appendMsg('user',text);
+  showTyping();
+  await new Promise(r=>setTimeout(r,680));
+  removeTyping();
+  const local=await respond(text);
+  if(local){appendMsg('ai',local);return;}
+  // API fallback — but first try to detect a product intent from Claude's reply
+  showTyping();
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:200,
+        system:`You are SportZone AI for India. We sell: cricket gear, running shoes, badminton rackets, football gear, swimming accessories.
+If the user is asking about products, gear, equipment, sports items, or shopping — reply with ONLY one of these exact words: CRICKET, RUNNING, BADMINTON, FOOTBALL, SWIMMING, ALL.
+If it is NOT a product/shopping query (e.g. greetings, general chat) — reply with a single short friendly sentence only, no product lists.`,
+        messages:[{role:"user",content:text}]})
+    });
+    const data=await res.json();
+    removeTyping();
+    const reply=(data.content?.[0]?.text||'').trim();
+    // If Claude returned a category keyword, show catalog
+    const catMap={CRICKET:PRODUCTS.cricket,RUNNING:PRODUCTS.running,BADMINTON:PRODUCTS.badminton,FOOTBALL:PRODUCTS.football,SWIMMING:PRODUCTS.swimming,ALL:allProducts()};
+    const catKey=Object.keys(catMap).find(k=>reply===k);
+    if(catKey){
+      const label=catKey.charAt(0)+catKey.slice(1).toLowerCase();
+      appendMsg('ai',`<p>Here are our <strong>${label}</strong> products for you:</p>${renderProducts(catMap[catKey])}`);
+    } else {
+      appendMsg('ai',`<p>${reply||"How can I help you today?"}</p>
+        <div class="action-row">
+          <button class="action-btn" onclick="sendQuick('Show me cricket bats')">Cricket</button>
+          <button class="action-btn" onclick="sendQuick('Show me running shoes')">Running Shoes</button>
+          <button class="action-btn" onclick="sendQuick('Show me badminton rackets')">Badminton</button>
+          <button class="action-btn" onclick="sendQuick('Show me footballs')">Football</button>
+        </div>`);
+    }
+  }catch{
+    removeTyping();
+    appendMsg('ai',`<p>What sport are you shopping for today?</p>
+      <div class="action-row">
+        <button class="action-btn" onclick="sendQuick('Show me cricket bats')">Cricket</button>
+        <button class="action-btn" onclick="sendQuick('Show me running shoes')">Running Shoes</button>
+        <button class="action-btn" onclick="sendQuick('Show me badminton rackets')">Badminton</button>
+        <button class="action-btn" onclick="sendQuick('Show me footballs')">Football</button>
+      </div>`);
+  }
+}
+
+function sendQuick(text){document.getElementById('chat-input').value=text;sendMessage();}
+function handleKey(e){if(e.key==='Enter')sendMessage();}
+
+/* ─────────────────────────────────────────
+   WELCOME MESSAGE
+───────────────────────────────────────── */
+window.onload=()=>{
+  syncCart();
+  setTimeout(()=>{
+    appendMsg('ai',`<p>Welcome back, <strong>Rahul</strong>! I'm your SportZone AI Assistant.</p>
+<p style="margin-top:6px;font-size:13px;color:var(--muted)">Based on your last cricket bat purchase, you might also like:</p>
+${renderRecos({id:'c1'})}
+<p style="margin-top:10px;font-size:13px;">What are you looking for today?</p>`);
+  },400);
+};
+</script>
+</body>
+</html>
