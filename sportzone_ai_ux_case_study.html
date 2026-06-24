@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SportZone AI — UX Case Study</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  /* exact color extraction from your live prototype */
+  --bg:              #f4f7f6; /* Clean, light grey-teal canvas background */
+  --bg-darker:       #e8f0ed; /* Slightly darker teal-grey accent */
+  --sz-teal:         #005c45; /* Signature SportZone Deep Teal */
+  --sz-teal-hover:   #004836; /* Darker state for deep teal elements */
+  --sz-teal-light:   #eef7f4; /* Super light teal tint for alerts/highlights */
+  
+  /* Text & Contrast */
+  --text-main:       #112521; /* High contrast dark green-slate for paragraphs & headings */
+  --text-muted:      #58726c; /* Elegant desaturated green-gray for labels/secondary info */
+  --text-white:      #ffffff; /* Clean contrast white */
+  
+  /* System Accents optimized for light background */
+  --accent-green:    #15803d; /* Safe, professional positive accent */
+  --accent-red:      #b91c1c; /* Refined diagnostic red */
+  --accent-amber:    #b45309; /* Deep warning gold */
+  
+  /* Layout Structures */
+  --card-bg:         #ffffff; /* Crisp white cards matching your chat bubbles */
+  --line:            #e2ece9; /* Light teal-tinted border lines for structural dividers */
+  --shadow-sm:       0 2px 8px rgba(0, 92, 69, 0.04); /* Soft, airy green-tinted shadows */
+  --shadow-md:       0 8px 24px rgba(0, 92, 69, 0.06); 
+  
+  /* Fonts */
+  --bebas: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --sans:  'DM Sans', system-ui, sans-serif;
+  --mono:  'DM Mono', monospace;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text-main);
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--sz-teal)}
+
+/* ── HERO ── */
+.hero{
+  padding:100px 3rem 100px; /* Adjusted top padding since sticky header is removed */
+  position:relative;
+  overflow:hidden;
+  background: linear-gradient(135deg, var(--sz-teal) 0%, var(--sz-teal-hover) 100%);
+  color: var(--text-white);
+  border-bottom: 4px solid var(--line);
+}
+
+/* Subtly patterned design dots matching sporty webapp layout */
+.hero::before{
+  content:'';
+  position:absolute;
+  top:0; right:0; bottom:0; left:0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events:none;
+}
+
+.hero-inner{
+  max-width:1100px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:5rem;
+  align-items:center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:1.5rem;
+}
+.hero-eyebrow span{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color: var(--text-white);
+  opacity: 0.9;
+  font-weight:600;
+}
+.hero-eyebrow::before{
+  content:'';
+  width:32px;height:2px;
+  background: var(--text-white);
+}
+
+.hero h1{
+  font-family:var(--bebas);
+  font-size:clamp(64px,8vw,100px);
+  line-height:.9;
+  letter-spacing:.02em;
+  color: var(--text-white);
+  margin-bottom:2rem;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.hero h1 span.gradient-text{
+  color: var(--text-white);
+  opacity: 0.85;
+}
+
+.hero h1 .outline{
+  -webkit-text-stroke:1.5px rgba(255, 255, 255, 0.6);
+  color:transparent;
+}
+
+.hero-desc{
+  font-size:17px;
+  color: var(--bg);
+  line-height:1.7;
+  max-width:540px;
+  margin-bottom:2.5rem;
+  opacity: 0.95;
+}
+
+.hero-cta{
+  display:inline-flex;align-items:center;gap:10px;
+  background: var(--text-white);
+  color: var(--sz-teal);
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:14px 28px;
+  border-radius:6px;
+  text-decoration:none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transition: all .2s ease;
+}
+.hero-cta:hover{
+  transform:translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+  background: var(--bg);
+}
+.hero-cta svg{width:16px;height:16px;transition: transform 0.2s;}
+.hero-cta:hover svg {transform: translateX(4px);}
+
+/* Brand Meta Card matching prototype panel styles */
+.hero-meta{
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius:12px;
+  padding:2.25rem;
+  position:relative;
+  box-shadow: var(--shadow-md);
+}
+.hero-meta::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;
+  height:4px;
+  background: var(--sz-teal);
+  border-radius:12px 12px 0 0;
+}
+.hm-label{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  margin-bottom:1.5rem;
+  font-weight:600;
+}
+.hm-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.8rem 0;
+  border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.hm-row:last-child{border-bottom:none}
+.hm-k{color:var(--text-muted); font-weight: 500;}
+.hm-v{color:var(--text-main); font-weight:600}
+.hm-v a{color:var(--sz-teal);text-decoration:none;transition: color 0.2s;}
+.hm-v a:hover{color: var(--text-main);}
+
+/* ── SECTIONS ── */
+.container{max-width:1100px;margin:0 auto;padding:0 3rem}
+
+.cs-section{
+  padding:100px 0;
+  border-bottom:1px solid var(--line);
+  position:relative;
+  overflow:hidden;
+}
+
+.sec-top{
+  display:flex;align-items:flex-start;
+  gap:2.5rem;
+  margin-bottom:4rem;
+}
+
+.sec-tag{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  transform:rotate(180deg);
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  flex-shrink:0;
+  margin-top:8px;
+  font-weight: 600;
+}
+
+.sec-head h2{
+  font-family:var(--bebas);
+  font-size:56px;
+  letter-spacing:.04em;
+  color:var(--text-main);
+  line-height:0.95;
+  margin-bottom:.5rem;
+}
+.sec-head .method{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--sz-teal);
+  font-weight:600;
+}
+
+/* big section backgrounds to reference prototype numbers */
+.bg-num{
+  position:absolute;
+  font-family:var(--bebas);
+  font-size:320px;
+  color: rgba(0, 92, 69, 0.02);
+  line-height:1;
+  right:-30px;top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  user-select:none;
+}
+
+/* ── GRID MODULES ── */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-radius:12px;overflow:hidden;margin-bottom:2rem;box-shadow: var(--shadow-sm)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:12px;overflow:hidden;margin-bottom:2rem;box-shadow: var(--shadow-sm)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:12px;overflow:hidden;margin-bottom:2rem;box-shadow: var(--shadow-sm)}
+
+.card{
+  background:var(--card-bg);
+  padding:2rem 1.75rem;
+  position:relative;
+  transition:background .2s ease, transform .2s ease;
+}
+.card:hover{
+  background: var(--bg);
+  transform: translateY(-2px);
+}
+.card::after{
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: transparent;
+  transition: background 0.2s;
+}
+.card:hover::after{
+  background: var(--sz-teal);
+}
+.card .cl{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--sz-teal);
+  margin-bottom:.75rem;
+  font-weight:600;
+}
+.card .cv{font-size:14.5px;color:var(--text-main);line-height:1.6; font-weight: 500;}
+
+/* Single wide brand highlight card */
+.wide-card{
+  background: var(--sz-teal-light);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:1.5rem 2rem;
+  margin-bottom:2rem;
+  border-left:4px solid var(--sz-teal);
+  box-shadow: var(--shadow-sm);
+}
+.wide-card p{font-size:15px;color:var(--sz-teal-hover);line-height:1.7}
+.wide-card strong{color:var(--sz-teal);font-weight:700}
+
+/* ── PAIN POINTS (Redesigned as clean, scannable light panels) ── */
+.pain-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:2rem}
+.pi{
+  display:flex;align-items:center;gap:18px;
+  padding:1.25rem 1.75rem;
+  background:var(--card-bg);
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:14.5px;
+  color:var(--text-main);
+  line-height:1.5;
+  box-shadow: var(--shadow-sm);
+  transition:border-color .2s, transform .2s, background-color .2s;
+}
+.pi:hover{
+  border-color: var(--sz-teal);
+  transform:translateX(6px);
+  background: var(--bg);
+}
+.sv{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  padding:4px 12px;
+  border-radius:6px;
+  flex-shrink:0;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.sh { background: #fef2f2; color: var(--accent-red); border: 1px solid rgba(185, 28, 28, 0.2); }
+.sm { background: #fffbeb; color: var(--accent-amber); border: 1px solid rgba(180, 83, 9, 0.2); }
+.sl { background: var(--sz-teal-light); color: var(--sz-teal); border: 1px solid rgba(0, 92, 69, 0.2); }
+
+/* ── CLAUDE-DRIVEN PROMPT ENGINEERING & SYNTHESIS ── */
+.ux-methods{display:flex;flex-direction:column}
+.ux-row{
+  display:grid;
+  grid-template-columns:60px 1fr;
+  gap:2rem;
+  align-items:flex-start;
+  padding:2rem 0;
+  border-bottom:1px solid var(--line);
+  transition: padding-left 0.3s ease;
+}
+.ux-row:first-child{border-top:1px solid var(--line)}
+.ux-row:hover {
+  padding-left: 10px;
+}
+.ux-n{
+  font-family:var(--bebas);
+  font-size:44px;
+  color: var(--bg-darker);
+  line-height:1;
+  transition:color .3s;
+}
+.ux-row:hover .ux-n{color:var(--sz-teal)}
+.ux-body h4{
+  font-size:17px;
+  font-weight:700;
+  color:var(--text-main);
+  margin-bottom:6px;
+  transition: color .2s;
+}
+.ux-row:hover .ux-body h4 {
+  color: var(--sz-teal);
+}
+.ux-body p{font-size:14.5px;color:var(--text-muted);line-height:1.7}
+
+/* ── CONVERSATIONAL CHAT-BUBBLE TASK FLOWS ── */
+.flows-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.flow-col {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 2.25rem 1.75rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.flow-col:hover {
+  border-color: var(--sz-teal);
+  transform: translateY(-2px);
+}
+.flow-col-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--sz-teal-light);
+  padding-bottom: 0.75rem;
+}
+.chat-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex-grow: 1;
+}
+/* Alternate Bubble Configurations */
+.bubble-item {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+  position: relative;
+}
+.bubble-item.user {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+.bubble-item.ai {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+.bubble-meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.bubble-text {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 14px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+/* User Conversational Bubbles */
+.bubble-item.user .bubble-text {
+  background: var(--sz-teal);
+  color: var(--text-white);
+  border-bottom-right-radius: 2px;
+}
+.bubble-item.user.hi .bubble-text {
+  background: var(--accent-red);
+  color: var(--text-white);
+}
+/* Assistant Conversational Bubbles */
+.bubble-item.ai .bubble-text {
+  background: var(--bg);
+  color: var(--text-main);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 2px;
+}
+.bubble-item.ai.ok .bubble-text {
+  background: var(--sz-teal-light);
+  color: var(--sz-teal-hover);
+  border: 1px solid rgba(0, 92, 69, 0.2);
+}
+
+/* Hover Shifts */
+.flow-col:hover .bubble-item.user .bubble-text {
+  transform: translateX(-2px);
+}
+.flow-col:hover .bubble-item.ai .bubble-text {
+  transform: translateX(2px);
+}
+
+/* ── ASSISTANT INTEGRATION CARDS ── */
+.claude-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:12px;overflow:hidden;margin-bottom:2rem;box-shadow: var(--shadow-sm)}
+.cc{background:var(--card-bg);padding:2rem;transition:background .2s}
+.cc:hover{background:var(--bg)}
+.cc .icon{font-size:26px;margin-bottom:.75rem;display:block}
+.cc h4{font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:6px}
+.cc p{font-size:14px;color:var(--text-muted);line-height:1.65}
+
+/* ── TAGS & PILLS ── */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:2rem}
+.pill{
+  font-family:var(--mono);
+  font-size:11px;
+  padding:6px 16px;
+  border:1px solid var(--line);
+  border-radius:99px;
+  color:var(--text-muted);
+  background:var(--card-bg);
+  transition:all .2s;
+  cursor: default;
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+.pill:hover{border-color:var(--sz-teal);color:var(--sz-teal);background: var(--sz-teal-light)}
+
+/* ── QUANTITATIVE SUCCESS METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border-radius:12px;overflow:hidden;margin-bottom:2rem;box-shadow: var(--shadow-sm)}
+.mt{background:var(--card-bg);padding:2.25rem 1rem;text-align:center;transition:background .2s}
+.mt:hover{background:var(--bg)}
+.mb{
+  font-family:var(--bebas);
+  font-size:48px;
+  color:var(--sz-teal);
+  line-height:1;
+  margin-bottom:.4rem;
+}
+.mt:nth-child(even) .mb{
+  color: var(--text-main);
+}
+.ml{font-size:12px;color:var(--text-muted);line-height:1.5;padding:0 8px; font-weight: 500;}
+
+/* ── NEXT STEPS ROADMAP ── */
+.next-list{display:flex;flex-direction:column;gap:10px}
+.ni{
+  display:flex;align-items:center;gap:18px;
+  padding:1.25rem 1.75rem;
+  background:var(--card-bg);
+  border:1px solid var(--line);
+  border-radius:10px;
+  font-size:14.5px;
+  color:var(--text-main);
+  line-height:1.55;
+  box-shadow: var(--shadow-sm);
+  transition:border-color .2s, transform .2s, background-color .2s;
+}
+.ni:hover{
+  border-color: var(--sz-teal);
+  transform:translateX(6px);
+  background: var(--bg);
+}
+.np{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:6px;
+  flex-shrink:0;
+  letter-spacing:.04em;
+}
+.p1 { background: #fef2f2; color: var(--accent-red); }
+.p2 { background: #fffbeb; color: var(--accent-amber); }
+.p3 { background: var(--sz-teal-light); color: var(--sz-teal); }
+.ni strong{color:var(--text-main);font-weight:700}
+
+/* ── REFLECTION & CORE INSIGHT PANEL ── */
+.reflection{
+  background: linear-gradient(135deg, var(--sz-teal) 0%, var(--sz-teal-hover) 100%);
+  border: 1px solid var(--line);
+  border-radius:20px;
+  padding:4rem;
+  margin:100px 0;
+  position:relative;
+  overflow:hidden;
+  box-shadow: var(--shadow-md);
+  color: var(--text-white);
+}
+.reflection::after{
+  content:'';
+  position:absolute;bottom:-80px;right:-80px;
+  width:240px;height:240px;
+  background:rgba(255, 255, 255, 0.05);
+  border-radius:50%;
+  pointer-events:none;
+}
+.reflection .rl{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color: var(--text-white);
+  opacity: 0.9;
+  margin-bottom:1.25rem;
+  display:flex;align-items:center;gap:12px;
+  font-weight: 600;
+}
+.reflection .rl::before{content:'';width:24px;height:2px;background: var(--text-white)}
+.reflection h2{
+  font-family:var(--bebas);
+  font-size:42px;
+  letter-spacing:.04em;
+  color: var(--text-white);
+  margin-bottom:1.25rem;
+}
+.reflection p{font-size:16px;color: var(--bg);line-height:1.85;max-width:750px; opacity: 0.95;}
+
+/* ── RESPONSIVE ADAPTABILITY ── */
+@media(max-width:960px){
+  .hero{padding:110px 1.5rem 70px}
+  .hero-inner{grid-template-columns:1fr;gap:3rem}
+  .hero-meta{display:none}
+  .container{padding:0 1.5rem}
+  .flows-grid{grid-template-columns:1fr; gap:1.5rem}
+  .g4,.metrics{grid-template-columns:repeat(2, 1fr)}
+  .g2,.claude-grid{grid-template-columns:1fr}
+  .sec-tag{display:none}
+  .reflection{padding:2.5rem 2rem; margin:60px 0}
+}
+
+@media(max-width:480px){
+  .g4,.metrics{grid-template-columns:1fr}
+  .sec-head h2{font-size:44px}
+  .hero h1{font-size:clamp(56px,12vw,80px)}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">
+        <span>UX Case Study · Brand-Matched Design</span>
+      </div>
+      <h1>SPORT<br><span class="outline">ZONE</span><br>AI</h1>
+      <p class="hero-desc">A premium conversational commerce experience designed for sports e-commerce. Styled, mapped, and structured to integrate seamlessly with the live SportZone assistant interface.</p>
+      <a href="https://shaliarun.github.io/sports-ecommerce-assistant.html" target="_blank" class="hero-cta">
+        View Live Prototype
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+    <div class="hero-meta">
+      <div class="hm-label">Project Details</div>
+      <div class="hm-row"><span class="hm-k">Role</span><span class="hm-v">Solo Designer & Dev</span></div>
+      <div class="hm-row"><span class="hm-k">Platform</span><span class="hm-v">Web · Responsive</span></div>
+      <div class="hm-row"><span class="hm-k">Domain</span><span class="hm-v">Sports E-commerce</span></div>
+      <div class="hm-row"><span class="hm-k">Brand Color</span><span class="hm-v" style="color:var(--sz-teal)">SportZone Teal</span></div>
+      <div class="hm-row"><span class="hm-k">Methods</span><span class="hm-v">6 Prompt Engineering Stages</span></div>
+      <div class="hm-row"><span class="hm-k">Prototype</span><span class="hm-v"><a href="https://shaliarun.github.io/sports-ecommerce-assistant.html" target="_blank">Live ↗</a></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 01 PROBLEM -->
+<section class="cs-section" id="problem">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">01 / Problem</div>
+      <div class="sec-head">
+        <h2>PROBLEM</h2>
+        <div class="method">Core Challenge</div>
+      </div>
+    </div>
+    <div class="wide-card" style="border-left-color: var(--accent-red); background: #fffcfc;">
+      <p style="font-size: 16px; color: var(--text-main); line-height: 1.8;">
+        Traditional sports e-commerce filters create heavy decision fatigue, forcing users through exhausting specifications to find specialized gear. 
+        <strong>SportZone AI</strong> replaces complex grids with a conversational assistant, reducing discovery friction to deliver the perfect match in under three clicks.
+      </p>
+    </div>
+    <div class="bg-num">01</div>
+  </div>
+</section>
+
+<!-- 02 HOW IT WORKS -->
+<section class="cs-section" id="how-it-works">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">02 / Process</div>
+      <div class="sec-head">
+        <h2>HOW IT WORKS</h2>
+        <div class="method">The Interaction Loop</div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card">
+        <div class="cl">Step 01</div>
+        <div class="cv"><strong>Query Input</strong><br>User types natural language request (e.g., "Need junior cricket bat").</div>
+      </div>
+      <div class="card">
+        <div class="cl">Step 02</div>
+        <div class="cv"><strong>AI Synthesis</strong><br>Claude interprets intent and filters product database for relevant matches.</div>
+      </div>
+      <div class="card">
+        <div class="cl">Step 03</div>
+        <div class="cv"><strong>Instant Delivery</strong><br>Assistant renders visual cards and actionable flows for seamless conversion.</div>
+      </div>
+    </div>
+    <div class="bg-num">02</div>
+  </div>
+</section>
+
+<!-- 03 CLAUDE-DRIVEN PROMPT ENGINEERING & SYNTHESIS -->
+<section class="cs-section" id="methods">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">03 / Method</div>
+      <div class="sec-head">
+        <h2>CLAUDE-DRIVEN PROMPT SYNTHESIS</h2>
+        <div class="method">4-Stage Generative Engineering</div>
+      </div>
+    </div>
+    
+    <div class="ux-methods">
+      <div class="ux-row">
+        <div class="ux-n">01</div>
+        <div class="ux-body">
+          <h4>Role Setup</h4>
+          <p>We asked Claude to act as a Senior UX Designer and Lead Developer. This made sure our application followed solid design rules from the very first step.</p>
+        </div>
+      </div>
+      <div class="ux-row">
+        <div class="ux-n">02</div>
+        <div class="ux-body">
+          <h4>Visual Branding</h4>
+          <p>We gave Claude our exact brand styling guidelines and forest teal colors. This ensured the AI assistant matched the real SportZone website perfectly.</p>
+        </div>
+      </div>
+      <div class="ux-row">
+        <div class="ux-n">03</div>
+        <div class="ux-body">
+          <h4>Modular Building</h4>
+          <p>We built the interface one piece at a time—like individual product cards, sliding sidebars, and checkout windows—to keep our code clean and error-free.</p>
+        </div>
+      </div>
+      <div class="ux-row">
+        <div class="ux-n">04</div>
+        <div class="ux-body">
+          <h4>Dynamic Actions</h4>
+          <p>We programmed interactive behaviors, like updating the shopping cart counter and validating order tracking numbers, using simple English instructions.</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-num">03</div>
+  </div>
+</section>
+
+<!-- 04 TASK FLOWS -->
+<section class="cs-section" id="flows">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">04 / Flows</div>
+      <div class="sec-head">
+        <h2>CONVERSATIONAL FLOWS</h2>
+        <div class="method">Turn-Based Interaction Streams</div>
+      </div>
+    </div>
+
+    <div class="flows-grid">
+      <!-- COLUMN 1: Happy Path -->
+      <div class="flow-col">
+        <div class="flow-col-title">Discovery to Purchase</div>
+        <div class="chat-stream">
+          <div class="bubble-item ai">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">Hi Rahul! Welcome back to SportZone. What gear are we searching for today?</div>
+          </div>
+          <div class="bubble-item user hi">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">Looking for lightweight junior cricket bats.</div>
+          </div>
+          <div class="bubble-item ai">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">[Renders matched gear cards with sizes and ratings directly in-chat]</div>
+          </div>
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">Can I see details for the Kashmiri Willow bat?</div>
+          </div>
+          <div class="bubble-item ai ok">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">[Slides open detail panel with full metrics and specs]</div>
+          </div>
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">Perfect, let's buy this. Add to cart.</div>
+          </div>
+          <div class="bubble-item ai ok">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">[Updates cart counter badge & launches secure 3-step checkout overlay]</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: Tracking Flow -->
+      <div class="flow-col">
+        <div class="flow-col-title">Order Tracking Flow</div>
+        <div class="chat-stream">
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">Where is my cricket helmet order?</div>
+          </div>
+          <div class="bubble-item ai hi">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">I can help with that. [Launches the dynamic Track Order sidebar panel]</div>
+          </div>
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">[Enters active order serial ID: SZ-98301]</div>
+          </div>
+          <div class="bubble-item ai ok">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">Got it! Order is dispatched and currently in transit. Delivery expected tomorrow by 4 PM.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: Return Path -->
+      <div class="flow-col">
+        <div class="flow-col-title">Flexible Returns Path</div>
+        <div class="chat-stream">
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">I need to return these cricket pads.</div>
+          </div>
+          <div class="bubble-item ai hi">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">No problem at all! [Launches localized Returns Request module]</div>
+          </div>
+          <div class="bubble-item user">
+            <span class="bubble-meta">👤 User</span>
+            <div class="bubble-text">[Selects reason: "Incorrect Size (Too Small)"]</div>
+          </div>
+          <div class="bubble-item ai ok">
+            <span class="bubble-meta">🤖 Assistant</span>
+            <div class="bubble-text">Return authorized. Courier pickup scheduled at your primary address for Wednesday morning.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-num">04</div>
+  </div>
+</section>
+
+<!-- 05 CLAUDE AI -->
+<section class="cs-section" id="claude">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">05 / AI Build</div>
+      <div class="sec-head">
+        <h2>HOW CLAUDE AI WAS USED</h2>
+        <div class="method">AI-Assisted Design</div>
+      </div>
+    </div>
+    <div class="claude-grid">
+      <div class="cc"><span class="icon">🏗️</span><h4>Structure Planning</h4><p>Balanced information architecture across the sidebar console and conversational canvas.</p></div>
+      <div class="cc"><span class="icon">🧩</span><h4>Component Generation</h4><p>Rapidly coded modular widgets, adaptive modals, and quick-reply elements.</p></div>
+      <div class="cc"><span class="icon">✍️</span><h4>Copy Refining</h4><p>Designed structured placeholder copy and responsive assistant responses.</p></div>
+      <div class="cc"><span class="icon">⚡</span><h4>Interaction Logic</h4><p>Implemented state feedback, dynamic order validation, and responsive controls.</p></div>
+    </div>
+    <div class="pills">
+      <span class="pill">Contextual Prompting</span>
+      <span class="pill">Constraint-focused layout</span>
+      <span class="pill">Rapid Iterations</span>
+      <span class="pill">Accessibility evaluation</span>
+      <span class="pill">Mobile-first scale</span>
+      <span class="pill">System theme alignment</span>
+    </div>
+    <div class="bg-num">05</div>
+  </div>
+</section>
+
+<!-- 06 METRICS -->
+<section class="cs-section" id="metrics">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">06 / Metrics</div>
+      <div class="sec-head">
+        <h2>SUCCESS METRICS</h2>
+        <div class="method">KPI Framework</div>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="mt"><div class="mb">&lt;3</div><div class="ml">Clicks to discover target cricket gear</div></div>
+      <div class="mt"><div class="mb">100%</div><div class="ml">Responsiveness across all client viewpoints</div></div>
+      <div class="mt"><div class="mb">3</div><div class="ml">Simple steps to finalize secure checkout</div></div>
+      <div class="mt"><div class="mb">0</div><div class="ml">Required page reloads during navigation</div></div>
+      <div class="mt"><div class="mb">6</div><div class="ml">Interactive user flows built in prototype</div></div>
+    </div>
+    <div class="bg-num">06</div>
+  </div>
+</section>
+
+<!-- 07 NEXT STEPS -->
+<section class="cs-section" id="next">
+  <div class="container">
+    <div class="sec-top">
+      <div class="sec-tag">07 / Roadmap</div>
+      <div class="sec-head">
+        <h2>NEXT STEPS</h2>
+        <div class="method">Design Roadmap</div>
+      </div>
+    </div>
+    <div class="next-list">
+      <div class="ni"><span class="np p1">P1</span><div><strong>Formal Usability Testing</strong> — Think-aloud evaluations with 5 users buying protective gear</div></div>
+      <div class="ni"><span class="np p1">P1</span><div><strong>Live Database Hook</strong> — Fetching active catalogue prices and stock values dynamically</div></div>
+      <div class="ni"><span class="np p2">P2</span><div><strong>In-Chat Comparison Mode</strong> — Side-by-side sports gear dimensions displayed directly within chat logs</div></div>
+      <div class="ni"><span class="np p2">P2</span><div><strong>Member Personalization</strong> — Highlighting past purchases (e.g., cricket bat sizes) on entrance</div></div>
+      <div class="ni"><span class="np p3">P3</span><div><strong>Voice Queries</strong> — Speech-to-text input modes optimized for hands-free queries</div></div>
+      <div class="ni"><span class="np p3">P3</span><div><strong>Localization</strong> — Contextual support for regional terminology and sport variants</div></div>
+    </div>
+    <div class="bg-num">07</div>
+  </div>
+</section>
+
+<!-- REFLECTION -->
+<div class="container">
+  <div class="reflection">
+    <div class="rl">Takeaway</div>
+    <h2>THE REAL INSIGHT</h2>
+    <p>Designing with SportZone's clean light-teal theme highlights the absolute importance of visual continuity. A conversational assistant is only as effective as the visual trust it builds. Ensuring a clean, uncluttered dual-panel canvas directly reinforces shopper confidence during high-energy discovery steps.</p>
+  </div>
+</div>
+
+</body>
+</html>
